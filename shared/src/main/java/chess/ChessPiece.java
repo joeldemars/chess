@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -60,6 +61,30 @@ public class ChessPiece {
             case ROOK -> rookMoves(board, myPosition);
             case PAWN -> pawnMoves(board, myPosition);
         };
+    }
+
+    /**
+     * Get all possible moves along a straight line (i.e. for queens, bishops, and rooks), given the row and column
+     * offsets that define the line (e.g. rowOffset = 1 and columnOffset = 1 to get possible moves NE of a piece)
+     */
+    private Collection<ChessMove> movesAlong(ChessBoard board, ChessPosition myPosition, int rowOffset, int columnOffset) {
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        ChessPosition newPosition = new ChessPosition(myPosition.getRow() + rowOffset, myPosition.getColumn() + columnOffset);
+
+        while (newPosition.isValid()) {
+            ChessPiece piece = board.getPiece(newPosition);
+            if (piece == null) {
+                moves.add(new ChessMove(myPosition, newPosition, null));
+                newPosition = new ChessPosition(newPosition.getRow() + rowOffset, newPosition.getColumn() + columnOffset);
+            } else {
+                if (piece.pieceColor != this.pieceColor) {
+                    moves.add(new ChessMove(myPosition, newPosition, null));
+                }
+                break;
+            }
+        }
+
+        return moves;
     }
 
     private Collection<ChessMove> kingMoves(ChessBoard board, ChessPosition myPosition) {
