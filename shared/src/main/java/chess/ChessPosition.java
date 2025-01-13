@@ -31,4 +31,11 @@ public class ChessPosition {
     public int getColumn() {
         return this.col;
     }
+
+    /**
+     * @return whether the position is valid (i.e. on the chessboard)
+     */
+    public boolean isValid() {
+        return 1 <= this.col && this.col <= 8 && 1 <= this.row && this.row <= 8;
+    }
 }
