@@ -16,6 +16,10 @@ public class ChessPosition {
         this.col = col;
     }
 
+    public String toString() {
+        return "(" + row + ", " + col + ")";
+    }
+
     /**
      * @return which row this position is in
      * 1 codes for the bottom row

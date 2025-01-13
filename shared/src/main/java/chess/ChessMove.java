@@ -19,6 +19,14 @@ public class ChessMove {
         this.promotionPiece = promotionPiece;
     }
 
+    public String toString() {
+        String string = startPosition.toString() + " to " + endPosition.toString();
+        if (promotionPiece != null) {
+            string += " [" + promotionPiece + "]";
+        }
+        return string;
+    }
+
     /**
      * @return ChessPosition of starting location
      */
