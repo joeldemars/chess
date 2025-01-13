@@ -1,5 +1,6 @@
 package chess;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -67,7 +68,7 @@ public class ChessPiece {
      * Get all possible moves along a straight line (i.e. for queens, bishops, and rooks), given the row and column
      * offsets that define the line (e.g. rowOffset = 1 and columnOffset = 1 to get possible moves NE of a piece)
      */
-    private Collection<ChessMove> movesAlong(ChessBoard board, ChessPosition myPosition, int rowOffset, int columnOffset) {
+    private ArrayList<ChessMove> movesAlong(ChessBoard board, ChessPosition myPosition, int rowOffset, int columnOffset) {
         ArrayList<ChessMove> moves = new ArrayList<>();
         ChessPosition newPosition = new ChessPosition(myPosition.getRow() + rowOffset, myPosition.getColumn() + columnOffset);
 
@@ -92,11 +93,17 @@ public class ChessPiece {
     }
 
     private Collection<ChessMove> queenMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
+        Collection<ChessMove> moves = bishopMoves(board, myPosition);
+        moves.addAll(rookMoves(board, myPosition));
+        return moves;
     }
 
     private Collection<ChessMove> bishopMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
+        ArrayList<ChessMove> moves = movesAlong(board, myPosition, 1, 1);
+        moves.addAll(movesAlong(board, myPosition, 1, -1));
+        moves.addAll(movesAlong(board, myPosition, -1, 1));
+        moves.addAll(movesAlong(board, myPosition, -1, -1));
+        return moves;
     }
 
     private Collection<ChessMove> knightMoves(ChessBoard board, ChessPosition myPosition) {
@@ -104,7 +111,11 @@ public class ChessPiece {
     }
 
     private Collection<ChessMove> rookMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
+        ArrayList<ChessMove> moves = movesAlong(board, myPosition, 0, 1);
+        moves.addAll(movesAlong(board, myPosition, 0, -1));
+        moves.addAll(movesAlong(board, myPosition, 1, 0));
+        moves.addAll(movesAlong(board, myPosition, -1, 0));
+        return moves;
     }
 
     private Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition) {
