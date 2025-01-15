@@ -154,6 +154,49 @@ public class ChessPiece {
     }
 
     private Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        int direction = pieceColor == ChessGame.TeamColor.WHITE ? 1 : -1;
+        boolean initialMove = myPosition.getRow() == (pieceColor == ChessGame.TeamColor.WHITE ? 2 : 7);
+        boolean promotionMove = myPosition.getRow() == (pieceColor == ChessGame.TeamColor.WHITE ? 7 : 2);
+        ChessPosition singleSquare = new ChessPosition(myPosition.getRow() + direction, myPosition.getColumn());
+        ChessPosition doubleSquare = new ChessPosition(myPosition.getRow() + 2 * direction, myPosition.getColumn());
+        ChessPosition leftCapture = new ChessPosition(myPosition.getRow() + direction, myPosition.getColumn() - 1);
+        ChessPosition rightCapture = new ChessPosition(myPosition.getRow() + direction, myPosition.getColumn() + 1);
+
+        if (board.getPiece(singleSquare) == null) {
+            if (promotionMove) {
+                moves.add(new ChessMove(myPosition, singleSquare, PieceType.QUEEN));
+                moves.add(new ChessMove(myPosition, singleSquare, PieceType.BISHOP));
+                moves.add(new ChessMove(myPosition, singleSquare, PieceType.ROOK));
+                moves.add(new ChessMove(myPosition, singleSquare, PieceType.KNIGHT));
+            } else {
+                moves.add(new ChessMove(myPosition, singleSquare, null));
+                if (initialMove && board.getPiece(doubleSquare) == null) {
+                    moves.add(new ChessMove(myPosition, doubleSquare, null));
+                }
+            }
+        }
+        if (leftCapture.isValid() && board.getPiece(leftCapture) != null && board.getPiece(leftCapture).pieceColor != pieceColor) {
+            if (promotionMove) {
+                moves.add(new ChessMove(myPosition, leftCapture, PieceType.QUEEN));
+                moves.add(new ChessMove(myPosition, leftCapture, PieceType.BISHOP));
+                moves.add(new ChessMove(myPosition, leftCapture, PieceType.ROOK));
+                moves.add(new ChessMove(myPosition, leftCapture, PieceType.KNIGHT));
+            } else {
+                moves.add(new ChessMove(myPosition, leftCapture, null));
+            }
+        }
+        if (rightCapture.isValid() && board.getPiece(rightCapture) != null && board.getPiece(rightCapture).pieceColor != pieceColor) {
+            if (promotionMove) {
+                moves.add(new ChessMove(myPosition, rightCapture, PieceType.QUEEN));
+                moves.add(new ChessMove(myPosition, rightCapture, PieceType.BISHOP));
+                moves.add(new ChessMove(myPosition, rightCapture, PieceType.ROOK));
+                moves.add(new ChessMove(myPosition, rightCapture, PieceType.KNIGHT));
+            } else {
+                moves.add(new ChessMove(myPosition, rightCapture, null));
+            }
+        }
+
+        return moves;
     }
 }
