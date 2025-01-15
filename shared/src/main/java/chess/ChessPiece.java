@@ -1,6 +1,5 @@
 package chess;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -89,7 +88,25 @@ public class ChessPiece {
     }
 
     private Collection<ChessMove> kingMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        ChessPosition[] potentialPositions = {
+                new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() - 1),
+                new ChessPosition(myPosition.getRow(), myPosition.getColumn() - 1),
+                new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() - 1),
+                new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn()),
+                new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn()),
+                new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() + 1),
+                new ChessPosition(myPosition.getRow(), myPosition.getColumn() + 1),
+                new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() + 1),
+        };
+
+        for (ChessPosition position : potentialPositions) {
+            if (position.isValid() && (board.getPiece(position) == null || board.getPiece(position).pieceColor != pieceColor)) {
+                moves.add(new ChessMove(myPosition, position, null));
+            }
+        }
+
+        return moves;
     }
 
     private Collection<ChessMove> queenMoves(ChessBoard board, ChessPosition myPosition) {
