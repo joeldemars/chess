@@ -165,10 +165,7 @@ public class ChessPiece {
 
         if (board.getPiece(singleSquare) == null) {
             if (promotionMove) {
-                moves.add(new ChessMove(myPosition, singleSquare, PieceType.QUEEN));
-                moves.add(new ChessMove(myPosition, singleSquare, PieceType.BISHOP));
-                moves.add(new ChessMove(myPosition, singleSquare, PieceType.ROOK));
-                moves.add(new ChessMove(myPosition, singleSquare, PieceType.KNIGHT));
+                moves.addAll(ChessMove.promotionMoves(myPosition, singleSquare));
             } else {
                 moves.add(new ChessMove(myPosition, singleSquare, null));
                 if (initialMove && board.getPiece(doubleSquare) == null) {
@@ -176,22 +173,18 @@ public class ChessPiece {
                 }
             }
         }
+
         if (leftCapture.isValid() && board.getPiece(leftCapture) != null && board.getPiece(leftCapture).pieceColor != pieceColor) {
             if (promotionMove) {
-                moves.add(new ChessMove(myPosition, leftCapture, PieceType.QUEEN));
-                moves.add(new ChessMove(myPosition, leftCapture, PieceType.BISHOP));
-                moves.add(new ChessMove(myPosition, leftCapture, PieceType.ROOK));
-                moves.add(new ChessMove(myPosition, leftCapture, PieceType.KNIGHT));
+                moves.addAll(ChessMove.promotionMoves(myPosition, leftCapture));
             } else {
                 moves.add(new ChessMove(myPosition, leftCapture, null));
             }
         }
+
         if (rightCapture.isValid() && board.getPiece(rightCapture) != null && board.getPiece(rightCapture).pieceColor != pieceColor) {
             if (promotionMove) {
-                moves.add(new ChessMove(myPosition, rightCapture, PieceType.QUEEN));
-                moves.add(new ChessMove(myPosition, rightCapture, PieceType.BISHOP));
-                moves.add(new ChessMove(myPosition, rightCapture, PieceType.ROOK));
-                moves.add(new ChessMove(myPosition, rightCapture, PieceType.KNIGHT));
+                moves.addAll(ChessMove.promotionMoves(myPosition, rightCapture));
             } else {
                 moves.add(new ChessMove(myPosition, rightCapture, null));
             }
