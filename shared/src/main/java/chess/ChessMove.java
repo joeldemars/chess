@@ -22,6 +22,10 @@ public class ChessMove {
         this.promotionPiece = promotionPiece;
     }
 
+    /**
+     * Return all possible promotion variants (promotion to queen, bishop, rook, or knight) with a given starting and
+     * ending position.
+     */
     public static ArrayList<ChessMove> promotionMoves(ChessPosition startPosition, ChessPosition endPosition) {
         ArrayList<ChessMove> moves = new ArrayList<>(4);
         moves.add(new ChessMove(startPosition, endPosition, ChessPiece.PieceType.QUEEN));

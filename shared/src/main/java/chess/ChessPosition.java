@@ -19,8 +19,9 @@ public class ChessPosition {
     }
 
     /**
-     * Return a new ChessPosition offset by given number of rows and columns
-     * @param rows Number of rows to offset
+     * Return a new ChessPosition offset by given number of rows and columns.
+     *
+     * @param rows    Number of rows to offset
      * @param columns Number of columns to offset
      * @return New ChessPosition with given offset
      */

@@ -24,9 +24,10 @@ public class MoveCalculator {
 
     /**
      * Get all possible moves along a straight line (i.e. for queens, bishops, and rooks), given the row and column
-     * offsets that define the line (e.g. rowOffset = 1 and columnOffset = 1 to get possible moves NE of a piece)
+     * offsets that define the line (e.g. rowOffset = 1 and columnOffset = 1 to get possible moves NE of a piece).
      */
-    private static ArrayList<ChessMove> movesAlong(ChessBoard board, ChessPiece piece, ChessPosition myPosition, int rowOffset, int columnOffset) {
+    private static ArrayList<ChessMove> movesAlong(ChessBoard board, ChessPiece piece, ChessPosition myPosition,
+                                                   int rowOffset, int columnOffset) {
         ArrayList<ChessMove> moves = new ArrayList<>();
         ChessPosition newPosition = myPosition.offsetBy(rowOffset, columnOffset);
 
@@ -46,6 +47,9 @@ public class MoveCalculator {
         return moves;
     }
 
+    /**
+     * Return all possible moves for a king on a given board in a given position.
+     */
     private static Collection<ChessMove> kingMoves(ChessBoard board, ChessPiece piece, ChessPosition myPosition) {
         ArrayList<ChessMove> moves = new ArrayList<>(8);
         ChessPosition[] potentialPositions = {
@@ -60,20 +64,29 @@ public class MoveCalculator {
         };
 
         for (ChessPosition position : potentialPositions) {
-            if (position.isValid() && (board.getPiece(position) == null || board.getPiece(position).getTeamColor() != piece.getTeamColor())) {
-                moves.add(new ChessMove(myPosition, position, null));
+            if (position.isValid()) {
+                ChessPiece other = board.getPiece(position);
+                if (other == null || other.getTeamColor() != piece.getTeamColor()) {
+                    moves.add(new ChessMove(myPosition, position, null));
+                }
             }
         }
 
         return moves;
     }
 
+    /**
+     * Return all possible moves for a queen on a given board in a given position.
+     */
     private static Collection<ChessMove> queenMoves(ChessBoard board, ChessPiece piece, ChessPosition myPosition) {
         Collection<ChessMove> moves = bishopMoves(board, piece, myPosition);
         moves.addAll(rookMoves(board, piece, myPosition));
         return moves;
     }
 
+    /**
+     * Return all possible moves for a bishop on a given board in a given position.
+     */
     private static Collection<ChessMove> bishopMoves(ChessBoard board, ChessPiece piece, ChessPosition myPosition) {
         ArrayList<ChessMove> moves = movesAlong(board, piece, myPosition, 1, 1);
         moves.addAll(movesAlong(board, piece, myPosition, 1, -1));
@@ -82,13 +95,16 @@ public class MoveCalculator {
         return moves;
     }
 
+    /**
+     * Return all possible moves for a knight on a given board in a given position.
+     */
     private static Collection<ChessMove> knightMoves(ChessBoard board, ChessPiece piece, ChessPosition myPosition) {
         ArrayList<ChessMove> moves = new ArrayList<>(8);
         ChessPosition[] potentialPositions = {
                 myPosition.offsetBy(-2, -1),
-                myPosition.offsetBy(-2,1),
+                myPosition.offsetBy(-2, 1),
                 myPosition.offsetBy(-1, 2),
-                myPosition.offsetBy(-1 ,-2),
+                myPosition.offsetBy(-1, -2),
                 myPosition.offsetBy(1, -2),
                 myPosition.offsetBy(1, 2),
                 myPosition.offsetBy(2, -1),
@@ -96,14 +112,20 @@ public class MoveCalculator {
         };
 
         for (ChessPosition position : potentialPositions) {
-            if (position.isValid() && (board.getPiece(position) == null || board.getPiece(position).getTeamColor() != piece.getTeamColor())) {
-                moves.add(new ChessMove(myPosition, position, null));
+            if (position.isValid()) {
+                ChessPiece other = board.getPiece(position);
+                if (other == null || other.getTeamColor() != piece.getTeamColor()) {
+                    moves.add(new ChessMove(myPosition, position, null));
+                }
             }
         }
 
         return moves;
     }
 
+    /**
+     * Return all possible moves for a rook on a given board in a given position.
+     */
     private static Collection<ChessMove> rookMoves(ChessBoard board, ChessPiece piece, ChessPosition myPosition) {
         ArrayList<ChessMove> moves = movesAlong(board, piece, myPosition, 0, 1);
         moves.addAll(movesAlong(board, piece, myPosition, 0, -1));
@@ -112,6 +134,9 @@ public class MoveCalculator {
         return moves;
     }
 
+    /**
+     * Return all possible moves for a pawn on a given board in a given position.
+     */
     private static Collection<ChessMove> pawnMoves(ChessBoard board, ChessPiece piece, ChessPosition myPosition) {
         ArrayList<ChessMove> moves = new ArrayList<>();
         int offset = piece.getTeamColor() == ChessGame.TeamColor.WHITE ? 1 : -1;
@@ -133,7 +158,9 @@ public class MoveCalculator {
             }
         }
 
-        if (leftCapture.isValid() && board.getPiece(leftCapture) != null && board.getPiece(leftCapture).getTeamColor() != piece.getTeamColor()) {
+        if (leftCapture.isValid()
+                && board.getPiece(leftCapture) != null
+                && board.getPiece(leftCapture).getTeamColor() != piece.getTeamColor()) {
             if (promotionMove) {
                 moves.addAll(ChessMove.promotionMoves(myPosition, leftCapture));
             } else {
@@ -141,7 +168,9 @@ public class MoveCalculator {
             }
         }
 
-        if (rightCapture.isValid() && board.getPiece(rightCapture) != null && board.getPiece(rightCapture).getTeamColor() != piece.getTeamColor()) {
+        if (rightCapture.isValid()
+                && board.getPiece(rightCapture) != null
+                && board.getPiece(rightCapture).getTeamColor() != piece.getTeamColor()) {
             if (promotionMove) {
                 moves.addAll(ChessMove.promotionMoves(myPosition, rightCapture));
             } else {
