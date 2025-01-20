@@ -18,6 +18,16 @@ public class ChessPosition {
         this.col = col;
     }
 
+    /**
+     * Return a new ChessPosition offset by given number of rows and columns
+     * @param rows Number of rows to offset
+     * @param columns Number of columns to offset
+     * @return New ChessPosition with given offset
+     */
+    public ChessPosition offsetBy(int rows, int columns) {
+        return new ChessPosition(row + rows, col + columns);
+    }
+
     @Override
     public boolean equals(Object other) {
         if (other == null || getClass() != other.getClass()) {

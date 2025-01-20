@@ -90,14 +90,14 @@ public class ChessPiece {
     private Collection<ChessMove> kingMoves(ChessBoard board, ChessPosition myPosition) {
         ArrayList<ChessMove> moves = new ArrayList<>();
         ChessPosition[] potentialPositions = {
-                new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() - 1),
-                new ChessPosition(myPosition.getRow(), myPosition.getColumn() - 1),
-                new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() - 1),
-                new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn()),
-                new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn()),
-                new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() + 1),
-                new ChessPosition(myPosition.getRow(), myPosition.getColumn() + 1),
-                new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() + 1),
+                myPosition.offsetBy(-1, -1),
+                myPosition.offsetBy(-1, 0),
+                myPosition.offsetBy(-1, 1),
+                myPosition.offsetBy(0, -1),
+                myPosition.offsetBy(0, 1),
+                myPosition.offsetBy(1, -1),
+                myPosition.offsetBy(1, 0),
+                myPosition.offsetBy(1, 1),
         };
 
         for (ChessPosition position : potentialPositions) {
@@ -126,14 +126,14 @@ public class ChessPiece {
     private Collection<ChessMove> knightMoves(ChessBoard board, ChessPosition myPosition) {
         ArrayList<ChessMove> moves = new ArrayList<>();
         ChessPosition[] potentialPositions = {
-                new ChessPosition(myPosition.getRow() + 2, myPosition.getColumn() - 1),
-                new ChessPosition(myPosition.getRow() + 2, myPosition.getColumn() + 1),
-                new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() + 2),
-                new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() - 2),
-                new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() + 2),
-                new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() - 2),
-                new ChessPosition(myPosition.getRow() - 2, myPosition.getColumn() + 1),
-                new ChessPosition(myPosition.getRow() - 2, myPosition.getColumn() - 1),
+                myPosition.offsetBy(-2, -1),
+                myPosition.offsetBy(-2,1),
+                myPosition.offsetBy(-1, 2),
+                myPosition.offsetBy(-1 ,-2),
+                myPosition.offsetBy(1, -2),
+                myPosition.offsetBy(1, 2),
+                myPosition.offsetBy(2, -1),
+                myPosition.offsetBy(2, 1),
         };
 
         for (ChessPosition position : potentialPositions) {
@@ -155,13 +155,13 @@ public class ChessPiece {
 
     private Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition) {
         ArrayList<ChessMove> moves = new ArrayList<>();
-        int direction = pieceColor == ChessGame.TeamColor.WHITE ? 1 : -1;
+        int offset = pieceColor == ChessGame.TeamColor.WHITE ? 1 : -1;
         boolean initialMove = myPosition.getRow() == (pieceColor == ChessGame.TeamColor.WHITE ? 2 : 7);
         boolean promotionMove = myPosition.getRow() == (pieceColor == ChessGame.TeamColor.WHITE ? 7 : 2);
-        ChessPosition singleSquare = new ChessPosition(myPosition.getRow() + direction, myPosition.getColumn());
-        ChessPosition doubleSquare = new ChessPosition(myPosition.getRow() + 2 * direction, myPosition.getColumn());
-        ChessPosition leftCapture = new ChessPosition(myPosition.getRow() + direction, myPosition.getColumn() - 1);
-        ChessPosition rightCapture = new ChessPosition(myPosition.getRow() + direction, myPosition.getColumn() + 1);
+        ChessPosition singleSquare = myPosition.offsetBy(offset, 0);
+        ChessPosition doubleSquare = myPosition.offsetBy(2 * offset, 0);
+        ChessPosition leftCapture = myPosition.offsetBy(offset, -1);
+        ChessPosition rightCapture = myPosition.offsetBy(offset, 1);
 
         if (board.getPiece(singleSquare) == null) {
             if (promotionMove) {
