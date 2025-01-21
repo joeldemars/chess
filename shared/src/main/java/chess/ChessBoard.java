@@ -1,5 +1,8 @@
 package chess;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 /**
  * A chessboard that can hold and rearrange chess pieces.
  * <p>
@@ -10,8 +13,18 @@ public class ChessBoard {
 
     private final ChessPiece[][] grid = new ChessPiece[8][8];
 
-    public ChessBoard() {
-        
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessBoard that = (ChessBoard) o;
+        return Objects.deepEquals(grid, that.grid);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.deepHashCode(grid);
     }
 
     /**
@@ -40,6 +53,34 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        throw new RuntimeException("Not implemented");
+        ChessPiece[] whiteRow = {
+                new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK),
+                new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT),
+                new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP),
+                new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.QUEEN),
+                new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KING),
+                new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP),
+                new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT),
+                new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK),
+        };
+
+        ChessPiece[] blackRow = {
+                new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK),
+                new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT),
+                new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.BISHOP),
+                new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.QUEEN),
+                new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING),
+                new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.BISHOP),
+                new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT),
+                new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK),
+        };
+
+        grid[0] = whiteRow;
+        Arrays.fill(grid[1], new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN));
+        for (int i = 2; i < 6; i++) {
+            Arrays.fill(grid[i], null);
+        }
+        Arrays.fill(grid[6], new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN));
+        grid[7] = blackRow;
     }
 }
