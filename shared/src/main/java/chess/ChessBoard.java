@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Objects;
 
 /**
@@ -12,6 +13,8 @@ import java.util.Objects;
 public class ChessBoard {
 
     private final ChessPiece[][] grid = new ChessPiece[8][8];
+    private final HashSet<ChessPosition> whitePositions = new HashSet<>(16);
+    private final HashSet<ChessPosition> blackPositions = new HashSet<>(16);
 
     @Override
     public boolean equals(Object o) {
@@ -35,6 +38,39 @@ public class ChessBoard {
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
         grid[position.getRow() - 1][position.getColumn() - 1] = piece;
+        if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
+            whitePositions.add(position);
+        } else {
+            blackPositions.add(position);
+        }
+    }
+
+    /**
+     * Return the set of all positions occupied by the pieces of a given team color.
+     *
+     * @param teamColor The team color
+     * @return All positions occupied by the given team color
+     */
+    public HashSet<ChessPosition> teamPositions(ChessGame.TeamColor teamColor) {
+        if (teamColor == ChessGame.TeamColor.WHITE) {
+            return whitePositions;
+        } else {
+            return blackPositions;
+        }
+    }
+
+    /**
+     * Return the set of all positions occupied by the pieces of the opposing team color.
+     *
+     * @param teamColor The team color
+     * @return All positions occupied by the opposing team color
+     */
+    public HashSet<ChessPosition> opponentPositions(ChessGame.TeamColor teamColor) {
+        if (teamColor == ChessGame.TeamColor.WHITE) {
+            return blackPositions;
+        } else {
+            return whitePositions;
+        }
     }
 
     /**
@@ -82,5 +118,14 @@ public class ChessBoard {
         }
         Arrays.fill(grid[6], new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN));
         grid[7] = blackRow;
+
+        whitePositions.clear();
+        blackPositions.clear();
+        for (int i = 1; i <= 8; i++) {
+            whitePositions.add(new ChessPosition(1, i));
+            whitePositions.add(new ChessPosition(2, i));
+            blackPositions.add(new ChessPosition(7, i));
+            blackPositions.add(new ChessPosition(8, i));
+        }
     }
 }
