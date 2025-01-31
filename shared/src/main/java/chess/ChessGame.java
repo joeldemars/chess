@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -11,10 +12,18 @@ import java.util.Collection;
 public class ChessGame {
     private TeamColor teamTurn;
     private ChessBoard board = new ChessBoard();
+    private final HashSet<ChessPosition> whitePositions = new HashSet<>(16);
+    private final HashSet<ChessPosition> blackPositions = new HashSet<>(16);
 
     public ChessGame() {
         teamTurn = TeamColor.WHITE;
         board.resetBoard();
+        for (int i = 1; i <= 8; i++) {
+            whitePositions.add(new ChessPosition(1, i));
+            whitePositions.add(new ChessPosition(2, i));
+            blackPositions.add(new ChessPosition(7, i));
+            blackPositions.add(new ChessPosition(8, i));
+        }
     }
 
     /**
@@ -39,6 +48,28 @@ public class ChessGame {
     public enum TeamColor {
         WHITE,
         BLACK
+    }
+
+    /**
+     * @return All positions occupied by the current team.
+     */
+    public HashSet<ChessPosition> teamPositions(ChessGame.TeamColor teamColor) {
+        if (teamColor == ChessGame.TeamColor.WHITE) {
+            return whitePositions;
+        } else {
+            return blackPositions;
+        }
+    }
+
+    /**
+     * @return All positions occupied by the opposing team.
+     */
+    public HashSet<ChessPosition> opponentPositions(ChessGame.TeamColor teamColor) {
+        if (teamColor == ChessGame.TeamColor.WHITE) {
+            return blackPositions;
+        } else {
+            return whitePositions;
+        }
     }
 
     /**
