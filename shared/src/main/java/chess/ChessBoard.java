@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Objects;
 
 /**
@@ -11,7 +12,27 @@ import java.util.Objects;
  */
 public class ChessBoard {
 
-    private final ChessPiece[][] grid = new ChessPiece[8][8];
+    private final ChessPiece[][] grid;
+    private final HashSet<ChessPosition> whitePositions;
+    private final HashSet<ChessPosition> blackPositions;
+
+    public ChessBoard() {
+        grid = new ChessPiece[8][8];
+        whitePositions = new HashSet<>(16);
+        blackPositions = new HashSet<>(16);
+    }
+
+    public ChessBoard(ChessBoard other) {
+        grid = other.grid.clone();
+        whitePositions = new HashSet<>(other.whitePositions);
+        blackPositions = new HashSet<>(other.blackPositions);
+    }
+
+    public ChessBoard after(ChessMove move) {
+        ChessBoard newBoard = new ChessBoard(this);
+        newBoard.makeMove(move);
+        return newBoard;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -35,6 +56,11 @@ public class ChessBoard {
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
         grid[position.getRow() - 1][position.getColumn() - 1] = piece;
+        if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
+            whitePositions.add(position);
+        } else {
+            blackPositions.add(position);
+        }
     }
 
     /**
@@ -46,6 +72,70 @@ public class ChessBoard {
      */
     public ChessPiece getPiece(ChessPosition position) {
         return grid[position.getRow() - 1][position.getColumn() - 1];
+    }
+
+    /**
+     * Apply a move to the chessboard.
+     * WARNING: Performs no checks for move validity.
+     *
+     * @param move Move to apply
+     */
+    public void makeMove(ChessMove move) {
+        ChessPosition start = move.getStartPosition();
+        ChessPiece piece = getPiece(start);
+        ChessPosition end = move.getEndPosition();
+        ChessPiece opponentPiece = getPiece(end);
+
+        grid[start.getRow() - 1][start.getColumn() - 1] = null;
+        grid[end.getRow() - 1][end.getColumn() - 1] = piece;
+
+        if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
+            whitePositions.remove(start);
+            whitePositions.add(end);
+            if (opponentPiece != null) {
+                blackPositions.remove(end);
+            }
+        } else {
+            blackPositions.remove(start);
+            blackPositions.add(end);
+            if (opponentPiece != null) {
+                whitePositions.remove(end);
+            }
+        }
+    }
+
+    /**
+     * @return All positions occupied by the current team.
+     */
+    public HashSet<ChessPosition> teamPositions(ChessGame.TeamColor teamColor) {
+        if (teamColor == ChessGame.TeamColor.WHITE) {
+            return whitePositions;
+        } else {
+            return blackPositions;
+        }
+    }
+
+    /**
+     * @return All positions occupied by the opposing team.
+     */
+    public HashSet<ChessPosition> opponentPositions(ChessGame.TeamColor teamColor) {
+        if (teamColor == ChessGame.TeamColor.WHITE) {
+            return blackPositions;
+        } else {
+            return whitePositions;
+        }
+    }
+
+    /**
+     * Return the position of the given team's king
+     *
+     * @param teamColor Team color
+     * @return Position of king, or null if none
+     */
+    public ChessPosition kingPosition(ChessGame.TeamColor teamColor) {
+        return teamPositions(teamColor).stream().dropWhile(
+                (position) -> getPiece(position).getPieceType() != ChessPiece.PieceType.KING
+        ).findFirst().orElse(null);
     }
 
     /**
@@ -82,5 +172,14 @@ public class ChessBoard {
         }
         Arrays.fill(grid[6], new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN));
         grid[7] = blackRow;
+
+        whitePositions.clear();
+        blackPositions.clear();
+        for (int i = 1; i <= 8; i++) {
+            whitePositions.add(new ChessPosition(1, i));
+            whitePositions.add(new ChessPosition(2, i));
+            blackPositions.add(new ChessPosition(7, i));
+            blackPositions.add(new ChessPosition(8, i));
+        }
     }
 }
