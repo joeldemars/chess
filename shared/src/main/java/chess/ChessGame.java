@@ -1,5 +1,6 @@
 package chess;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -43,18 +44,34 @@ public class ChessGame {
     }
 
     /**
-     * Gets a valid moves for a piece at the given location
+     * Gets potential moves for a piece at the given location (including moves that place or leave the king in check)
+     *
+     * @param startPosition the piece to get potential moves for
+     * @return Set of potential moves for requested piece
+     */
+    public Collection<ChessMove> potentialMoves(ChessPosition startPosition) {
+        ChessPiece piece = board.getPiece(startPosition);
+        if (piece == null) {
+            return new ArrayList<>(0);
+        }
+        return piece.pieceMoves(board, startPosition);
+    }
+
+    /**
+     * Get a valid moves for a piece at the given location (not including moves that place or leave the king in check)
      *
      * @param startPosition the piece to get valid moves for
      * @return Set of valid moves for requested piece, or null if no piece at
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        ChessPiece piece = board.getPiece(startPosition);
-        if (piece == null) {
-            return null;
-        }
-        Collection<ChessMove> potentialMoves = piece.pieceMoves(board, startPosition);
+        throw new RuntimeException("Not implemented");
+//        ChessPiece piece = board.getPiece(startPosition);
+//        if (piece == null) {
+//            return null;
+//        }
+//        Collection<ChessMove> potentialMoves = piece.pieceMoves(board, startPosition);
+//        return potentialMoves.parallelStream().filter((move) -> board.after(move))
     }
 
     /**
@@ -76,9 +93,9 @@ public class ChessGame {
     public boolean isInCheck(TeamColor teamColor) {
         ChessPosition kingPosition = board.kingPosition(teamColor);
         return board.opponentPositions(teamColor).parallelStream()
-                .map(this::validMoves)
+                .map(this::potentialMoves)
                 .anyMatch((moves) ->
-                        moves != null && moves.stream().anyMatch(
+                        moves.stream().anyMatch(
                                 (move) -> move.getEndPosition().equals(kingPosition)
                         )
                 );
