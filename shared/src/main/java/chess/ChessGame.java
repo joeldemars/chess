@@ -3,6 +3,7 @@ package chess;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -17,6 +18,27 @@ public class ChessGame {
     public ChessGame() {
         teamTurn = TeamColor.WHITE;
         board.resetBoard();
+    }
+
+    public ChessGame(ChessGame other) {
+        teamTurn = other.teamTurn;
+        board = new ChessBoard(other.board);
+    }
+
+    /**
+     * Construct a new ChessGame object corresponding to the current game with the given move applied
+     *
+     * @param move Move to apply
+     * @return new ChessGame object after applying move or null if move is invalid
+     */
+    private ChessGame after(ChessMove move) {
+        ChessGame newGame = new ChessGame(this);
+        try {
+            newGame.makeMove(move);
+        } catch (InvalidMoveException e) {
+            return null;
+        }
+        return newGame;
     }
 
     /**
@@ -65,13 +87,14 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
-//        ChessPiece piece = board.getPiece(startPosition);
-//        if (piece == null) {
-//            return null;
-//        }
-//        Collection<ChessMove> potentialMoves = piece.pieceMoves(board, startPosition);
-//        return potentialMoves.parallelStream().filter((move) -> board.after(move))
+        ChessPiece piece = board.getPiece(startPosition);
+        if (piece == null) {
+            return null;
+        }
+        Collection<ChessMove> potentialMoves = piece.pieceMoves(board, startPosition);
+        return potentialMoves.parallelStream().filter(
+                (move) -> this.after(move).isInCheck(piece.getTeamColor())
+        ).toList();
     }
 
     /**
@@ -81,7 +104,11 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        if (!validMoves(move.getStartPosition()).contains(move)) {
+            throw new InvalidMoveException();
+        }
+        board.makeMove(move);
+        teamTurn = teamTurn == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
     }
 
     /**
