@@ -2,7 +2,6 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -131,7 +130,8 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return isInCheck(teamColor)
+                && board.teamPositions(teamColor).stream().map(this::validMoves).allMatch(Collection::isEmpty);
     }
 
     /**
