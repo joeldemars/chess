@@ -24,6 +24,9 @@ public class ChessBoard {
 
     public ChessBoard(ChessBoard other) {
         grid = other.grid.clone();
+        for (int i = 0; i < 8; i++) {
+            grid[i] = other.grid[i].clone();
+        }
         whitePositions = new HashSet<>(other.whitePositions);
         blackPositions = new HashSet<>(other.blackPositions);
     }

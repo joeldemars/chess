@@ -3,7 +3,6 @@ package chess;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -13,10 +12,11 @@ import java.util.stream.Collectors;
  */
 public class ChessGame {
     private TeamColor teamTurn;
-    private ChessBoard board = new ChessBoard();
+    private ChessBoard board;
 
     public ChessGame() {
         teamTurn = TeamColor.WHITE;
+        board = new ChessBoard();
         board.resetBoard();
     }
 
@@ -29,15 +29,11 @@ public class ChessGame {
      * Construct a new ChessGame object corresponding to the current game with the given move applied
      *
      * @param move Move to apply
-     * @return new ChessGame object after applying move or null if move is invalid
+     * @return new ChessGame object after applying move
      */
     private ChessGame after(ChessMove move) {
         ChessGame newGame = new ChessGame(this);
-        try {
-            newGame.makeMove(move);
-        } catch (InvalidMoveException e) {
-            return null;
-        }
+        newGame.board.makeMove(move);
         return newGame;
     }
 
@@ -91,9 +87,9 @@ public class ChessGame {
         if (piece == null) {
             return null;
         }
-        Collection<ChessMove> potentialMoves = piece.pieceMoves(board, startPosition);
-        return potentialMoves.parallelStream().filter(
-                (move) -> this.after(move).isInCheck(piece.getTeamColor())
+        TeamColor color = piece.getTeamColor();
+        return potentialMoves(startPosition).stream().filter(
+                (move) -> !this.after(move).isInCheck(color)
         ).toList();
     }
 
@@ -104,7 +100,7 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        if (!validMoves(move.getStartPosition()).contains(move)) {
+        if (!potentialMoves(move.getStartPosition()).contains(move) || this.after(move).isInCheck(teamTurn)) {
             throw new InvalidMoveException();
         }
         board.makeMove(move);
@@ -119,7 +115,7 @@ public class ChessGame {
      */
     public boolean isInCheck(TeamColor teamColor) {
         ChessPosition kingPosition = board.kingPosition(teamColor);
-        return board.opponentPositions(teamColor).parallelStream()
+        return board.opponentPositions(teamColor).stream()
                 .map(this::potentialMoves)
                 .anyMatch((moves) ->
                         moves.stream().anyMatch(
@@ -146,7 +142,8 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        return board.teamPositions(teamColor).parallelStream().map(this::validMoves).allMatch(Objects::isNull);
+        return !isInCheck(teamColor)
+                && board.teamPositions(teamColor).stream().map(this::validMoves).allMatch(Collection::isEmpty);
     }
 
     /**
