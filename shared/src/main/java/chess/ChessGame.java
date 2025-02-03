@@ -114,6 +114,7 @@ public class ChessGame {
         }
         board.makeMove(move);
         teamTurn = teamTurn == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
+        history.add(move);
     }
 
     /**
@@ -172,5 +173,9 @@ public class ChessGame {
      */
     public ChessBoard getBoard() {
         return board;
+    }
+
+    public ArrayList<ChessMove> getHistory() {
+        return history;
     }
 }

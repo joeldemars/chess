@@ -14,12 +14,39 @@ public class ChessMove {
     private final ChessPosition startPosition;
     private final ChessPosition endPosition;
     private final ChessPiece.PieceType promotionPiece;
+    private final boolean enPassant;
+    private final boolean castling;
 
     public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
                      ChessPiece.PieceType promotionPiece) {
         this.startPosition = startPosition;
         this.endPosition = endPosition;
         this.promotionPiece = promotionPiece;
+        enPassant = false;
+        castling = false;
+    }
+
+    public ChessMove(ChessPosition startPosition, ChessPosition endPosition,
+                     ChessPiece.PieceType promotionPiece, boolean enPassant, boolean castling) {
+        this.startPosition = startPosition;
+        this.endPosition = endPosition;
+        this.promotionPiece = promotionPiece;
+        this.enPassant = enPassant;
+        this.castling = castling;
+    }
+
+    /**
+     * Construct an en passant move with the given start position and end position
+     */
+    public static ChessMove enPassant(ChessPosition startPosition, ChessPosition endPosition) {
+        return new ChessMove(startPosition, endPosition, null, true, false);
+    }
+
+    /**
+     * Construct a castling move with the given start position and end position
+     */
+    public static ChessMove castling(ChessPosition startPosition, ChessPosition endPosition) {
+        return new ChessMove(startPosition, endPosition, null, false, true);
     }
 
     /**
@@ -81,5 +108,13 @@ public class ChessMove {
      */
     public ChessPiece.PieceType getPromotionPiece() {
         return promotionPiece;
+    }
+
+    public boolean isEnPassant() {
+        return enPassant;
+    }
+
+    public boolean isCastling() {
+        return castling;
     }
 }

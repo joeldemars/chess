@@ -2,6 +2,7 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.NoSuchElementException;
 
 public class MoveCalculator {
     /**
@@ -200,7 +201,29 @@ public class MoveCalculator {
      * Return all possible en passant moves for a pawn in a given game at a given position
      */
     private static ArrayList<ChessMove> enPassantMoves(ChessGame game, ChessPiece piece, ChessPosition position) {
-        return new ArrayList<ChessMove>();
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        ChessMove lastMove;
+
+        try {
+            lastMove = game.getHistory().getLast();
+        } catch (NoSuchElementException e) {
+            return moves;
+        }
+        
+        ChessGame.TeamColor teamColor = piece.getTeamColor();
+        int direction = teamColor == ChessGame.TeamColor.WHITE ? 1 : -1;
+        ChessPosition opponentPosition = lastMove.getEndPosition();
+        ChessMove pawnInitialMove = new ChessMove(opponentPosition.offsetBy(2 * direction, 0),
+                opponentPosition, null);
+        ChessPiece opponentPiece = game.getBoard().getPiece(opponentPosition);
+
+        if (opponentPiece.getPieceType() == ChessPiece.PieceType.PAWN
+                && Math.abs(position.getColumn() - opponentPosition.getColumn()) == 1
+                && lastMove.equals(pawnInitialMove)
+        ) {
+            moves.add(new ChessMove(position, opponentPosition.offsetBy(direction, 0), null));
+        }
+        return moves;
     }
 
     /**
