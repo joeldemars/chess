@@ -99,7 +99,13 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        if (!potentialMoves(move.getStartPosition()).contains(move) || this.after(move).isInCheck(teamTurn)) {
+        ChessPiece piece = board.getPiece(move.getStartPosition());
+        if (
+                piece == null
+                        || piece.getTeamColor() != teamTurn
+                        || !potentialMoves(move.getStartPosition()).contains(move)
+                        || this.after(move).isInCheck(teamTurn)
+        ) {
             throw new InvalidMoveException();
         }
         board.makeMove(move);
