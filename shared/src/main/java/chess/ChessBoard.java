@@ -31,12 +31,6 @@ public class ChessBoard {
         blackPositions = new HashSet<>(other.blackPositions);
     }
 
-    public ChessBoard after(ChessMove move) {
-        ChessBoard newBoard = new ChessBoard(this);
-        newBoard.makeMove(move);
-        return newBoard;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -90,7 +84,12 @@ public class ChessBoard {
         ChessPiece opponentPiece = getPiece(end);
 
         grid[start.getRow() - 1][start.getColumn() - 1] = null;
-        grid[end.getRow() - 1][end.getColumn() - 1] = piece;
+        if (move.getPromotionPiece() != null) {
+            grid[end.getRow() - 1][end.getColumn() - 1] =
+                    new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
+        } else {
+            grid[end.getRow() - 1][end.getColumn() - 1] = piece;
+        }
 
         if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
             whitePositions.remove(start);
