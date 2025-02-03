@@ -12,16 +12,19 @@ import java.util.Collection;
 public class ChessGame {
     private TeamColor teamTurn;
     private ChessBoard board;
+    private ArrayList<ChessMove> history;
 
     public ChessGame() {
         teamTurn = TeamColor.WHITE;
         board = new ChessBoard();
         board.resetBoard();
+        history = new ArrayList<>();
     }
 
     public ChessGame(ChessGame other) {
         teamTurn = other.teamTurn;
         board = new ChessBoard(other.board);
+        history = new ArrayList<>(other.history);
     }
 
     /**
@@ -71,7 +74,9 @@ public class ChessGame {
         if (piece == null) {
             return new ArrayList<>(0);
         }
-        return piece.pieceMoves(board, startPosition);
+        Collection<ChessMove> moves = piece.pieceMoves(board, startPosition);
+        moves.addAll(MoveCalculator.specialMoves(this, piece, startPosition));
+        return moves;
     }
 
     /**
@@ -100,11 +105,10 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         ChessPiece piece = board.getPiece(move.getStartPosition());
-        if (
-                piece == null
-                        || piece.getTeamColor() != teamTurn
-                        || !potentialMoves(move.getStartPosition()).contains(move)
-                        || this.after(move).isInCheck(teamTurn)
+        if (piece == null
+                || piece.getTeamColor() != teamTurn
+                || !potentialMoves(move.getStartPosition()).contains(move)
+                || this.after(move).isInCheck(teamTurn)
         ) {
             throw new InvalidMoveException();
         }

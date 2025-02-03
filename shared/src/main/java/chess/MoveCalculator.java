@@ -23,6 +23,21 @@ public class MoveCalculator {
     }
 
     /**
+     * Calculates all possible special moves (i.e. castling or en passant) for a given piece in a given game
+     *
+     * @return Collection of valid moves
+     */
+    public static Collection<ChessMove> specialMoves(ChessGame game, ChessPiece piece, ChessPosition position) {
+        if (piece.getPieceType() == ChessPiece.PieceType.PAWN) {
+            return enPassantMoves(game, piece, position);
+        } else if (piece.getPieceType() == ChessPiece.PieceType.KING) {
+            return castlingMoves(game, piece, position);
+        } else {
+            return new ArrayList<>();
+        }
+    }
+
+    /**
      * Get all possible moves along a straight line (i.e. for queens, bishops, and rooks), given the row and column
      * offsets that define the line (e.g. rowOffset = 1 and columnOffset = 1 to get possible moves NE of a piece).
      */
@@ -179,5 +194,19 @@ public class MoveCalculator {
         }
 
         return moves;
+    }
+
+    /**
+     * Return all possible en passant moves for a pawn in a given game at a given position
+     */
+    private static ArrayList<ChessMove> enPassantMoves(ChessGame game, ChessPiece piece, ChessPosition position) {
+        return new ArrayList<ChessMove>();
+    }
+
+    /**
+     * Return all possible castling moves for a king in a given game at a given position
+     */
+    private static ArrayList<ChessMove> castlingMoves(ChessGame game, ChessPiece piece, ChessPosition position) {
+        return new ArrayList<ChessMove>();
     }
 }
