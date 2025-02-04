@@ -1,5 +1,6 @@
 package chess;
 
+import java.io.DataInput;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.NoSuchElementException;
@@ -209,7 +210,7 @@ public class MoveCalculator {
         } catch (NoSuchElementException e) {
             return moves;
         }
-        
+
         ChessGame.TeamColor teamColor = piece.getTeamColor();
         int direction = teamColor == ChessGame.TeamColor.WHITE ? 1 : -1;
         ChessPosition opponentPosition = lastMove.getEndPosition();

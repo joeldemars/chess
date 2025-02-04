@@ -52,11 +52,34 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
+        setPiece(position, piece);
+    }
+
+    /**
+     * Set the piece at the given position
+     *
+     * @param position Position to place it
+     * @param piece    Piece to place or null if none
+     */
+    public void setPiece(ChessPosition position, ChessPiece piece) {
+        ChessPiece oldPiece = grid[position.getRow() - 1][position.getColumn() - 1];
+
+        if (oldPiece != null) {
+            if (oldPiece.getTeamColor() == ChessGame.TeamColor.WHITE) {
+                whitePositions.remove(position);
+            } else {
+                blackPositions.remove(position);
+            }
+        }
+
         grid[position.getRow() - 1][position.getColumn() - 1] = piece;
-        if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
-            whitePositions.add(position);
-        } else {
-            blackPositions.add(position);
+
+        if (piece != null) {
+            if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
+                whitePositions.add(position);
+            } else {
+                blackPositions.add(position);
+            }
         }
     }
 
@@ -82,27 +105,19 @@ public class ChessBoard {
         ChessPiece piece = getPiece(start);
         ChessPosition end = move.getEndPosition();
         ChessPiece opponentPiece = getPiece(end);
+        boolean enPassant = piece.getPieceType() == ChessPiece.PieceType.PAWN
+                && start.getColumn() != end.getColumn()
+                && opponentPiece == null;
 
-        grid[start.getRow() - 1][start.getColumn() - 1] = null;
-        if (move.getPromotionPiece() != null) {
-            grid[end.getRow() - 1][end.getColumn() - 1] =
-                    new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
+        setPiece(start, null);
+        if (move.getPromotionPiece() == null) {
+            setPiece(end, piece);
         } else {
-            grid[end.getRow() - 1][end.getColumn() - 1] = piece;
+            setPiece(end, new ChessPiece(piece.getTeamColor(), move.getPromotionPiece()));
         }
 
-        if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
-            whitePositions.remove(start);
-            whitePositions.add(end);
-            if (opponentPiece != null) {
-                blackPositions.remove(end);
-            }
-        } else {
-            blackPositions.remove(start);
-            blackPositions.add(end);
-            if (opponentPiece != null) {
-                whitePositions.remove(end);
-            }
+        if (enPassant) {
+            setPiece(new ChessPosition(start.getRow(), end.getColumn()), null);
         }
     }
 
