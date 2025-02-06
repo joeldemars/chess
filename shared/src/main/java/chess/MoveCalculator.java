@@ -217,20 +217,66 @@ public class MoveCalculator {
         ChessMove pawnInitialMove = new ChessMove(opponentPosition.offsetBy(2 * direction, 0),
                 opponentPosition, null);
         ChessPiece opponentPiece = game.getBoard().getPiece(opponentPosition);
+        ChessMove enPassantMove = new ChessMove(position, opponentPosition.offsetBy(direction, 0), null);
 
         if (opponentPiece.getPieceType() == ChessPiece.PieceType.PAWN
                 && Math.abs(position.getColumn() - opponentPosition.getColumn()) == 1
                 && lastMove.equals(pawnInitialMove)
+                && !game.after(enPassantMove).isInCheck(teamColor)
         ) {
-            moves.add(new ChessMove(position, opponentPosition.offsetBy(direction, 0), null));
+            moves.add(enPassantMove);
         }
         return moves;
     }
 
     /**
+     * Returns whether the piece at a given position has moved in the history of a given game
+     */
+    private static boolean hasMoved(ChessGame game, ChessPosition position) {
+        return game.getHistory().stream().anyMatch((move) -> move.getEndPosition().equals(position));
+    }
+
+    /**
      * Return all possible castling moves for a king in a given game at a given position
      */
-    private static ArrayList<ChessMove> castlingMoves(ChessGame game, ChessPiece piece, ChessPosition position) {
-        return new ArrayList<ChessMove>();
+    private static ArrayList<ChessMove> castlingMoves(ChessGame game, ChessPiece king, ChessPosition kingPosition) {
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        ChessGame.TeamColor teamColor = king.getTeamColor();
+        int row = teamColor == ChessGame.TeamColor.WHITE ? 1 : 8;
+        if (hasMoved(game, kingPosition) || game.isInCheck(teamColor)) {
+            return moves;
+        }
+
+        ChessPosition oneLeftOfKing = kingPosition.offsetBy(0, -1);
+        ChessPosition twoLeftOfKing = kingPosition.offsetBy(0, -2);
+        ChessPosition leftCorner = new ChessPosition(row, 1);
+        ChessPiece leftRook = game.getBoard().getPiece(leftCorner);
+        boolean canCastleLeft = leftRook != null
+                && leftRook.getPieceType() == ChessPiece.PieceType.ROOK
+                && !hasMoved(game, leftCorner)
+                && game.getBoard().getPiece(oneLeftOfKing) == null
+                && !game.after(new ChessMove(kingPosition, oneLeftOfKing, null)).isInCheck(teamColor)
+                && game.getBoard().getPiece(twoLeftOfKing) == null
+                && !game.after(new ChessMove(kingPosition, twoLeftOfKing, null)).isInCheck(teamColor);
+        if (canCastleLeft) {
+            moves.add(new ChessMove(kingPosition, twoLeftOfKing, null));
+        }
+
+        ChessPosition oneRightOfKing = kingPosition.offsetBy(0, 1);
+        ChessPosition twoRightOfKing = kingPosition.offsetBy(0, 2);
+        ChessPosition rightCorner = new ChessPosition(row, 8);
+        ChessPiece rightRook = game.getBoard().getPiece(rightCorner);
+        boolean canCastleRight = rightRook != null
+                && rightRook.getPieceType() == ChessPiece.PieceType.ROOK
+                && !hasMoved(game, rightCorner)
+                && game.getBoard().getPiece(oneRightOfKing) == null
+                && !game.after(new ChessMove(kingPosition, oneRightOfKing, null)).isInCheck(teamColor)
+                && game.getBoard().getPiece(twoRightOfKing) == null
+                && !game.after(new ChessMove(kingPosition, twoRightOfKing, null)).isInCheck(teamColor);
+        if (canCastleRight) {
+            moves.add(new ChessMove(kingPosition, twoRightOfKing, null));
+        }
+
+        return moves;
     }
 }

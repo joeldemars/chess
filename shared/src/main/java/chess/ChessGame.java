@@ -2,6 +2,7 @@ package chess;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -33,9 +34,10 @@ public class ChessGame {
      * @param move Move to apply
      * @return new ChessGame object after applying move
      */
-    private ChessGame after(ChessMove move) {
+    public ChessGame after(ChessMove move) {
         ChessGame newGame = new ChessGame(this);
         newGame.board.makeMove(move);
+        newGame.history.add(move);
         return newGame;
     }
 
@@ -74,9 +76,7 @@ public class ChessGame {
         if (piece == null) {
             return new ArrayList<>(0);
         }
-        Collection<ChessMove> moves = piece.pieceMoves(board, startPosition);
-        moves.addAll(MoveCalculator.specialMoves(this, piece, startPosition));
-        return moves;
+        return piece.pieceMoves(board, startPosition);
     }
 
     /**
@@ -92,9 +92,11 @@ public class ChessGame {
             return null;
         }
         TeamColor color = piece.getTeamColor();
-        return potentialMoves(startPosition).stream().filter(
+        ArrayList<ChessMove> validMoves = potentialMoves(startPosition).stream().filter(
                 (move) -> !this.after(move).isInCheck(color)
-        ).toList();
+        ).collect(Collectors.toCollection(ArrayList::new));
+        validMoves.addAll(MoveCalculator.specialMoves(this, piece, startPosition));
+        return validMoves;
     }
 
     /**
