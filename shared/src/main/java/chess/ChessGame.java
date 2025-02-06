@@ -109,8 +109,7 @@ public class ChessGame {
         ChessPiece piece = board.getPiece(move.getStartPosition());
         if (piece == null
                 || piece.getTeamColor() != teamTurn
-                || !potentialMoves(move.getStartPosition()).contains(move)
-                || this.after(move).isInCheck(teamTurn)
+                || !validMoves(move.getStartPosition()).contains(move)
         ) {
             throw new InvalidMoveException();
         }

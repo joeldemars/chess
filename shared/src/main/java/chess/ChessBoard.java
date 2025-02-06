@@ -108,6 +108,8 @@ public class ChessBoard {
         boolean enPassant = piece.getPieceType() == ChessPiece.PieceType.PAWN
                 && start.getColumn() != end.getColumn()
                 && opponentPiece == null;
+        boolean castling = piece.getPieceType() == ChessPiece.PieceType.KING
+                && Math.abs(start.getColumn() - end.getColumn()) == 2;
 
         setPiece(start, null);
         if (move.getPromotionPiece() == null) {
@@ -118,6 +120,15 @@ public class ChessBoard {
 
         if (enPassant) {
             setPiece(new ChessPosition(start.getRow(), end.getColumn()), null);
+        }
+
+        if (castling) {
+            int castleDirection = (end.getColumn() - start.getColumn()) / 2;
+            int rookColumn = castleDirection == 1 ? 8 : 1;
+            ChessPosition rookStart = new ChessPosition(start.getRow(), rookColumn);
+            ChessPiece rook = getPiece(rookStart);
+            setPiece(rookStart, null);
+            setPiece(end.offsetBy(0, -castleDirection), rook);
         }
     }
 
