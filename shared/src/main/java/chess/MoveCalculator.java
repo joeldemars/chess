@@ -1,6 +1,5 @@
 package chess;
 
-import java.io.DataInput;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.NoSuchElementException;
@@ -22,6 +21,26 @@ public class MoveCalculator {
             case ROOK -> rookMoves(board, piece, position);
             case PAWN -> pawnMoves(board, piece, position);
         };
+    }
+
+    /**
+     * Given an array of potential end positions, return a collection of moves corresponding to each one that is valid.
+     * A potential end position is valid if it exists on the board and is not occupied by a member of the same team.
+     *
+     * @return Collection of moves corresponding to valid end positions
+     */
+    private static Collection<ChessMove> validatePotentialEndPositions(
+            ChessPosition[] potentialPositions, ChessBoard board, ChessGame.TeamColor teamColor, ChessPosition start) {
+        ArrayList<ChessMove> moves = new ArrayList<>();
+        for (ChessPosition position : potentialPositions) {
+            if (position.isValid()) {
+                ChessPiece piece = board.getPiece(position);
+                if (piece == null || piece.getTeamColor() != teamColor) {
+                    moves.add(new ChessMove(start, position, null));
+                }
+            }
+        }
+        return moves;
     }
 
     /**
@@ -80,16 +99,7 @@ public class MoveCalculator {
                 myPosition.offsetBy(1, 1),
         };
 
-        for (ChessPosition position : potentialPositions) {
-            if (position.isValid()) {
-                ChessPiece other = board.getPiece(position);
-                if (other == null || other.getTeamColor() != piece.getTeamColor()) {
-                    moves.add(new ChessMove(myPosition, position, null));
-                }
-            }
-        }
-
-        return moves;
+        return validatePotentialEndPositions(potentialPositions, board, piece.getTeamColor(), myPosition);
     }
 
     /**
@@ -128,16 +138,7 @@ public class MoveCalculator {
                 myPosition.offsetBy(2, 1),
         };
 
-        for (ChessPosition position : potentialPositions) {
-            if (position.isValid()) {
-                ChessPiece other = board.getPiece(position);
-                if (other == null || other.getTeamColor() != piece.getTeamColor()) {
-                    moves.add(new ChessMove(myPosition, position, null));
-                }
-            }
-        }
-
-        return moves;
+        return validatePotentialEndPositions(potentialPositions, board, piece.getTeamColor(), myPosition);
     }
 
     /**
