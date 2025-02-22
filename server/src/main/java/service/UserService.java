@@ -27,7 +27,7 @@ public class UserService {
                 auths.createAuth(new AuthData(authToken, request.username()));
                 return new RegisterResult(request.username(), authToken);
             } catch (DataAccessException e2) {
-                throw new InternalServerErrorException("Error: Failed to register user");
+                throw new InternalServerErrorException("Error: failed to register user");
             }
         }
     }
@@ -41,7 +41,7 @@ public class UserService {
                     auths.createAuth(new AuthData(authToken, request.username()));
                     return new LoginResult(request.username(), authToken);
                 } catch (DataAccessException e) {
-                    throw new InternalServerErrorException("Error: Failed to login user");
+                    throw new InternalServerErrorException("Error: failed to log user in");
                 }
             } else {
                 throw new UnauthorizedException("Error: unauthorized");
@@ -52,6 +52,15 @@ public class UserService {
     }
 
     public void logout(String authorization) throws UnauthorizedException, InternalServerErrorException {
-        throw new InternalServerErrorException("Unimplemented");
+        try {
+            AuthData auth = auths.getAuth(authorization);
+            try {
+                auths.deleteAuth(auth);
+            } catch (DataAccessException e) {
+                throw new InternalServerErrorException("Error: failed to log user out");
+            }
+        } catch (DataAccessException e) {
+            throw new UnauthorizedException("Error: unauthorized");
+        }
     }
 }
