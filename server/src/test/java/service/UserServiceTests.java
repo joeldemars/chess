@@ -42,30 +42,30 @@ public class UserServiceTests {
     @Test
     @DisplayName("Successful login after user created")
     public void createAndLoginUser() {
-
+        Assertions.fail("Unimplemented");
     }
 
     @Test
     @DisplayName("Fail to login user without registering first")
     public void loginBeforeRegister() {
-
+        Assertions.fail("Unimplemented");
     }
 
     @Test
     @DisplayName("Fail to login with wrong password")
     public void loginWithWrongPassword() {
-
+        Assertions.fail("Unimplemented");
     }
 
     @Test
     @DisplayName("Successfully log out after logging in")
     public void logOutAfterLogin() {
-
+        Assertions.fail("Unimplemented");
     }
 
     @Test
     @DisplayName("Fail to log out with invalid authorization")
     public void logoutWithInvalidAuthorization() {
-
+        Assertions.fail("Unimplemented");
     }
 }
