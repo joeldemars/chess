@@ -52,7 +52,7 @@ public class UserServiceTests {
     @Test
     @DisplayName("Fail to login user without registering first")
     public void loginBeforeRegister() {
-        Assertions.assertThrows(ForbiddenException.class, () -> {
+        Assertions.assertThrows(UnauthorizedException.class, () -> {
             userService.login(new LoginRequest("user", "secret"));
         }, "User logged in without registering");
     }
@@ -61,7 +61,7 @@ public class UserServiceTests {
     @DisplayName("Fail to login with wrong password")
     public void loginWithWrongPassword() {
         userService.register(new RegisterRequest("user", "secret", "email@mail.com"));
-        Assertions.assertThrows(ForbiddenException.class, () -> {
+        Assertions.assertThrows(UnauthorizedException.class, () -> {
             userService.login(new LoginRequest("user", "notsecret"));
         }, "User logged in with incorrect password");
     }

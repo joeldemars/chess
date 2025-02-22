@@ -32,8 +32,23 @@ public class UserService {
         }
     }
 
-    public LoginRequest login(LoginRequest request) throws BadRequestException, InternalServerErrorException {
-        throw new InternalServerErrorException("Unimplemented");
+    public LoginResult login(LoginRequest request) throws UnauthorizedException, InternalServerErrorException {
+        try {
+            UserData user = users.getUser(request.username());
+            if (user.password().equals(request.password())) {
+                String authToken = UUID.randomUUID().toString();
+                try {
+                    auths.createAuth(new AuthData(authToken, request.username()));
+                    return new LoginResult(request.username(), authToken);
+                } catch (DataAccessException e) {
+                    throw new InternalServerErrorException("Error: Failed to login user");
+                }
+            } else {
+                throw new UnauthorizedException("Error: unauthorized");
+            }
+        } catch (DataAccessException e) {
+            throw new UnauthorizedException("Error: unauthorized");
+        }
     }
 
     public void logout(String authorization) throws UnauthorizedException, InternalServerErrorException {
