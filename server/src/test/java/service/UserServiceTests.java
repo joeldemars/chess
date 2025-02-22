@@ -69,12 +69,20 @@ public class UserServiceTests {
     @Test
     @DisplayName("Successfully log out after logging in")
     public void logOutAfterLogin() {
-        Assertions.fail("Unimplemented");
+        userService.register(new RegisterRequest("user", "secret", "email@mail.com"));
+        LoginResult result = userService.login(new LoginRequest("user", "secret"));
+        Assertions.assertDoesNotThrow(() -> {
+            userService.logout(result.authToken());
+        }, "Failed to log user out");
     }
 
     @Test
     @DisplayName("Fail to log out with invalid authorization")
     public void logoutWithInvalidAuthorization() {
-        Assertions.fail("Unimplemented");
+        userService.register(new RegisterRequest("user", "secret", "email@mail.com"));
+        userService.login(new LoginRequest("user", "secret"));
+        Assertions.assertThrows(UnauthorizedException.class, () -> {
+            userService.logout("00000000-0000-0000-0000-000000000000");
+        }, "Logged user out with invalid authToken");
     }
 }
