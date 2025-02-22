@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import spark.utils.Assert;
 
 public class UserServiceTests {
     private UserService userService;
@@ -42,19 +43,27 @@ public class UserServiceTests {
     @Test
     @DisplayName("Successful login after user created")
     public void createAndLoginUser() {
-        Assertions.fail("Unimplemented");
+        userService.register(new RegisterRequest("user", "secret", "email@mail.com"));
+        LoginResult result = userService.login(new LoginRequest("user", "secret"));
+        Assertions.assertEquals("user", result.username(), "Returned username does not match");
+        Assertions.assertNotNull(result.authToken(), "Returned authToken empty");
     }
 
     @Test
     @DisplayName("Fail to login user without registering first")
     public void loginBeforeRegister() {
-        Assertions.fail("Unimplemented");
+        Assertions.assertThrows(ForbiddenException.class, () -> {
+            userService.login(new LoginRequest("user", "secret"));
+        }, "User logged in without registering");
     }
 
     @Test
     @DisplayName("Fail to login with wrong password")
     public void loginWithWrongPassword() {
-        Assertions.fail("Unimplemented");
+        userService.register(new RegisterRequest("user", "secret", "email@mail.com"));
+        Assertions.assertThrows(ForbiddenException.class, () -> {
+            userService.login(new LoginRequest("user", "notsecret"));
+        }, "User logged in with incorrect password");
     }
 
     @Test
