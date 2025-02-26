@@ -33,15 +33,20 @@ public class GameServiceTests {
     }
 
     @Test
-    @DisplayName("Successfully create game")
+    @DisplayName("Successfully create two games")
     public void createGame() {
-        Assertions.fail("Not implemented");
+        int game1 = gameService.createGame("Game 1");
+        int game2 = gameService.createGame("Game 2");
+        Assertions.assertNotEquals(game1, game2, "Duplicate game ID returned");
     }
 
     @Test
     @DisplayName("Fail to create game with duplicate name")
     public void createGameWithDuplicateName() {
-        Assertions.fail("Not implemented");
+        gameService.createGame("Game");
+        Assertions.assertThrows(BadRequestException.class, () -> {
+            gameService.createGame("Game");
+        }, "Created game with duplicate name");
     }
 
     @Test
