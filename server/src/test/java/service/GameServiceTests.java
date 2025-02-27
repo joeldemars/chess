@@ -1,6 +1,6 @@
 package service;
 
-import model.UserData;
+import model.GameData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,19 +17,26 @@ public class GameServiceTests {
     @Test
     @DisplayName("Successfully list multiple games")
     public void listMultipleGames() {
-        Assertions.fail("Not implemented");
+        gameService.createGame("Game 1");
+        gameService.createGame("Game 2");
+        ListGamesResult result = gameService.listGames();
+        Assertions.assertEquals(2, result.games().length, "Returned incorrect number of games");
     }
 
     @Test
     @DisplayName("Successfully list zero games")
     public void listZeroGames() {
-        Assertions.fail("Not implemented");
+        ListGamesResult result = gameService.listGames();
+        Assertions.assertEquals(0, result.games().length);
     }
 
     @Test
     @DisplayName("Successfully list one game")
     public void listOneGame() {
-        Assertions.fail("Not implemented");
+        gameService.createGame("Game");
+        ListGamesResult result = gameService.listGames();
+        Assertions.assertEquals(1, result.games().length, "Returned more or less than one game");
+        Assertions.assertEquals("Game", result.games()[0].gameName(), "Game name does not match");
     }
 
     @Test

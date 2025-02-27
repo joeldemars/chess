@@ -10,7 +10,11 @@ public class GameService {
     private int gameID = 0;
 
     public ListGamesResult listGames() throws InternalServerErrorException {
-        throw new InternalServerErrorException("Not implemented");
+        try {
+            return new ListGamesResult(games.listGames().toArray(new GameData[games.listGames().size()]));
+        } catch (DataAccessException e) {
+            throw new InternalServerErrorException("Error: unable to list games");
+        }
     }
 
     public int createGame(String gameName) throws BadRequestException, InternalServerErrorException {
