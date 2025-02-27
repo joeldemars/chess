@@ -1,5 +1,7 @@
 package service;
 
+import dataaccess.MemoryAuthDAO;
+import dataaccess.MemoryUserDAO;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -10,7 +12,7 @@ public class UserServiceTests {
 
     @BeforeEach
     public void resetService() {
-        userService = new UserService();
+        userService = new UserService(new MemoryUserDAO(), new MemoryAuthDAO());
     }
 
     @Test

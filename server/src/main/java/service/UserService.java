@@ -1,16 +1,19 @@
 package service;
 
-import dataaccess.DataAccessException;
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryUserDAO;
+import dataaccess.*;
 import model.AuthData;
 import model.UserData;
 
 import java.util.UUID;
 
 public class UserService {
-    MemoryUserDAO users = new MemoryUserDAO();
-    MemoryAuthDAO auths = new MemoryAuthDAO();
+    UserDAO users;
+    AuthDAO auths;
+
+    UserService(UserDAO users, AuthDAO auths) {
+        this.users = users;
+        this.auths = auths;
+    }
 
     public RegisterResult register(RegisterRequest request)
             throws BadRequestException, ForbiddenException, InternalServerErrorException {

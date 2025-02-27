@@ -1,15 +1,27 @@
 package service;
 
 import chess.ChessGame;
+import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
-import dataaccess.MemoryGameDAO;
+import dataaccess.GameDAO;
 import model.GameData;
 
 public class GameService {
-    private MemoryGameDAO games = new MemoryGameDAO();
-    private int gameID = 0;
+    private GameDAO games;
+    private AuthDAO auths;
+    private int gameID;
 
-    public ListGamesResult listGames() throws InternalServerErrorException {
+    GameService(GameDAO games, AuthDAO auths) {
+        this.games = games;
+        this.auths = auths;
+        this.gameID = 0;
+    }
+
+    public ListGamesResult listGames(String authToken)
+            throws UnauthorizedException, InternalServerErrorException {
+        if (!authenticate(authToken)) {
+            throw new UnauthorizedException("Error: unauthorized");
+        }
         try {
             return new ListGamesResult(games.listGames().toArray(new GameData[games.listGames().size()]));
         } catch (DataAccessException e) {
@@ -17,7 +29,8 @@ public class GameService {
         }
     }
 
-    public int createGame(String gameName) throws BadRequestException, InternalServerErrorException {
+    public int createGame(String gameName, String authToken)
+            throws BadRequestException, UnauthorizedException, InternalServerErrorException {
         try {
             if (games.listGames().stream().anyMatch((game) -> game.gameName().equals(gameName))) {
                 throw new BadRequestException("Error: bad request");
@@ -34,8 +47,20 @@ public class GameService {
         }
     }
 
-    public void joinGame(JoinGameRequest request)
-            throws BadRequestException, ForbiddenException, InternalServerErrorException {
+    public void joinGame(JoinGameRequest request, String authToken)
+            throws BadRequestException, UnauthorizedException, ForbiddenException, InternalServerErrorException {
         throw new InternalServerErrorException("Not implemented");
+    }
+
+    /**
+     * Return true if the given authToken is valid and false otherwise.
+     */
+    private boolean authenticate(String authToken) {
+        try {
+            auths.getAuth(authToken);
+        } catch (DataAccessException e) {
+            return false;
+        }
+        return true;
     }
 }
