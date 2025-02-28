@@ -4,6 +4,7 @@ import chess.ChessGame;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
+import model.AuthData;
 import model.GameData;
 
 public class GameService {
@@ -19,9 +20,7 @@ public class GameService {
 
     public ListGamesResult listGames(String authToken)
             throws UnauthorizedException, InternalServerErrorException {
-        if (!authenticate(authToken)) {
-            throw new UnauthorizedException("Error: unauthorized");
-        }
+        authenticate(authToken);
         try {
             return new ListGamesResult(games.listGames().toArray(new GameData[games.listGames().size()]));
         } catch (DataAccessException e) {
@@ -31,6 +30,7 @@ public class GameService {
 
     public int createGame(String gameName, String authToken)
             throws BadRequestException, UnauthorizedException, InternalServerErrorException {
+        authenticate(authToken);
         try {
             if (games.listGames().stream().anyMatch((game) -> game.gameName().equals(gameName))) {
                 throw new BadRequestException("Error: bad request");
@@ -49,18 +49,55 @@ public class GameService {
 
     public void joinGame(JoinGameRequest request, String authToken)
             throws BadRequestException, UnauthorizedException, ForbiddenException, InternalServerErrorException {
-        throw new InternalServerErrorException("Not implemented");
+        AuthData auth = authenticate(authToken);
+        GameData game;
+        try {
+            game = games.getGame(request.gameID());
+        } catch (DataAccessException e) {
+            throw new BadRequestException("Error: bad request");
+        }
+        try {
+            if (request.playerColor().equals("WHITE")) {
+                if (game.whiteUsername().isEmpty()) {
+                    games.updateGame(game.gameID(), new GameData(
+                                    game.gameID(),
+                                    auth.username(),
+                                    game.blackUsername(),
+                                    game.gameName(),
+                                    game.game()
+                            )
+                    );
+                } else {
+                    throw new ForbiddenException("Error: already taken");
+                }
+            } else if (request.playerColor().equals("BLACK")) {
+                if (game.blackUsername().isEmpty()) {
+                    games.updateGame(game.gameID(), new GameData(
+                                    game.gameID(),
+                                    game.whiteUsername(),
+                                    auth.username(),
+                                    game.gameName(),
+                                    game.game()
+                            )
+                    );
+                } else {
+                    throw new ForbiddenException("Error: already taken");
+                }
+            }
+        } catch (DataAccessException e) {
+            throw new BadRequestException("Error: bad request");
+        }
     }
 
     /**
-     * Return true if the given authToken is valid and false otherwise.
+     * Return the corresponding AuthData if the given authToken is valid.
+     * Throw UnauthorizedException otherwise
      */
-    private boolean authenticate(String authToken) {
+    private AuthData authenticate(String authToken) throws UnauthorizedException {
         try {
-            auths.getAuth(authToken);
+            return auths.getAuth(authToken);
         } catch (DataAccessException e) {
-            return false;
+            throw new UnauthorizedException("Error: unauthorized");
         }
-        return true;
     }
 }

@@ -85,7 +85,7 @@ public class GameServiceTests {
     @DisplayName("Fail to create game when not logged in")
     public void createGameWithoutLogin() {
         gameService.createGame("Game", authToken1);
-        Assertions.assertThrows(BadRequestException.class, () -> {
+        Assertions.assertThrows(UnauthorizedException.class, () -> {
             gameService.createGame("Game", "00000000-0000-0000-0000-000000000000");
         }, "Created game without login");
     }
@@ -105,7 +105,7 @@ public class GameServiceTests {
         int gameID = gameService.createGame("Game", authToken1);
         gameService.joinGame(new JoinGameRequest("WHITE", gameID), authToken1);
         Assertions.assertDoesNotThrow(() -> {
-            gameService.joinGame(new JoinGameRequest("WHITE", gameID), authToken2);
+            gameService.joinGame(new JoinGameRequest("BLACK", gameID), authToken2);
         }, "Failed to join game with one player");
     }
 
@@ -115,7 +115,7 @@ public class GameServiceTests {
         int gameID = gameService.createGame("Game", authToken1);
         gameService.joinGame(new JoinGameRequest("WHITE", gameID), authToken1);
         gameService.joinGame(new JoinGameRequest("BLACK", gameID), authToken2);
-        Assertions.assertThrows(BadRequestException.class, () -> {
+        Assertions.assertThrows(ForbiddenException.class, () -> {
             gameService.joinGame(new JoinGameRequest("WHITE", gameID), authToken3);
         }, "Three players in game");
     }
@@ -125,7 +125,7 @@ public class GameServiceTests {
     public void joinGameAsSecondWhitePlayer() {
         int gameID = gameService.createGame("Game", authToken1);
         gameService.joinGame(new JoinGameRequest("WHITE", gameID), authToken1);
-        Assertions.assertThrows(BadRequestException.class, () -> {
+        Assertions.assertThrows(ForbiddenException.class, () -> {
             gameService.joinGame(new JoinGameRequest("WHITE", gameID), authToken2);
         }, "Two white players in game");
     }
