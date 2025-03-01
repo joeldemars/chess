@@ -1,6 +1,7 @@
 package service;
 
 import dataaccess.AuthDAO;
+import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import dataaccess.UserDAO;
 
@@ -10,9 +11,18 @@ public class ResetService {
     private GameDAO games;
 
     ResetService(UserDAO users, AuthDAO auths, GameDAO games) {
+        this.users = users;
+        this.auths = auths;
+        this.games = games;
     }
 
     public void clearDatabase() throws InternalServerErrorException {
-        throw new InternalServerErrorException("Not implemented");
+        try {
+            users.clearAll();
+            auths.clearAll();
+            games.clearAll();
+        } catch (DataAccessException e) {
+            throw new InternalServerErrorException("Error: failed to clear databases");
+        }
     }
 }
