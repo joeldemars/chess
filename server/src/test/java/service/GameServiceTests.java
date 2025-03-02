@@ -1,5 +1,6 @@
 package service;
 
+import chess.ChessGame;
 import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryGameDAO;
 import dataaccess.MemoryUserDAO;
@@ -34,8 +35,8 @@ public class GameServiceTests {
     @Test
     @DisplayName("Successfully list multiple games")
     public void listMultipleGames() {
-        gameService.createGame("Game 1", authToken1);
-        gameService.createGame("Game 2", authToken1);
+        gameService.createGame(new CreateGameRequest("Game 1"), authToken1);
+        gameService.createGame(new CreateGameRequest("Game 2"), authToken1);
         ListGamesResult result = gameService.listGames(authToken1);
         Assertions.assertEquals(2, result.games().length, "Returned incorrect number of games");
     }
@@ -50,7 +51,7 @@ public class GameServiceTests {
     @Test
     @DisplayName("Successfully list one game")
     public void listOneGame() {
-        gameService.createGame("Game", authToken1);
+        gameService.createGame(new CreateGameRequest("Game"), authToken1);
         ListGamesResult result = gameService.listGames(authToken1);
         Assertions.assertEquals(1, result.games().length, "Returned more or less than one game");
         Assertions.assertEquals("Game", result.games()[0].gameName(), "Game name does not match");
@@ -67,66 +68,68 @@ public class GameServiceTests {
     @Test
     @DisplayName("Successfully create two games")
     public void createGame() {
-        int game1 = gameService.createGame("Game 1", authToken1);
-        int game2 = gameService.createGame("Game 2", authToken1);
+        int game1 = gameService.createGame(new CreateGameRequest("Game 1"), authToken1).gameID();
+        int game2 = gameService.createGame(new CreateGameRequest("Game 2"), authToken1).gameID();
         Assertions.assertNotEquals(game1, game2, "Duplicate game ID returned");
     }
 
     @Test
     @DisplayName("Fail to create game with duplicate name")
     public void createGameWithDuplicateName() {
-        gameService.createGame("Game", authToken1);
+        gameService.createGame(new CreateGameRequest("Game"), authToken1);
         Assertions.assertThrows(BadRequestException.class, () -> {
-            gameService.createGame("Game", authToken1);
+            gameService.createGame(new CreateGameRequest("Game"), authToken1);
         }, "Created game with duplicate name");
     }
 
     @Test
     @DisplayName("Fail to create game when not logged in")
     public void createGameWithoutLogin() {
-        gameService.createGame("Game", authToken1);
+        gameService.createGame(new CreateGameRequest("Game"), authToken1);
         Assertions.assertThrows(UnauthorizedException.class, () -> {
-            gameService.createGame("Game", "00000000-0000-0000-0000-000000000000");
+            gameService.createGame(
+                    new CreateGameRequest("Game"), "00000000-0000-0000-0000-000000000000"
+            );
         }, "Created game without login");
     }
 
     @Test
     @DisplayName("Successfully join game with no players")
     public void joinGameWithNoPlayers() {
-        int gameID = gameService.createGame("Game", authToken1);
+        int gameID = gameService.createGame(new CreateGameRequest("Game"), authToken1).gameID();
         Assertions.assertDoesNotThrow(() -> {
-            gameService.joinGame(new JoinGameRequest("WHITE", gameID), authToken1);
+            gameService.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, gameID), authToken1);
         }, "Failed to join game with no players");
     }
 
     @Test
     @DisplayName("Successfully join game with one player")
     public void joinGameWithOnePlayer() {
-        int gameID = gameService.createGame("Game", authToken1);
-        gameService.joinGame(new JoinGameRequest("WHITE", gameID), authToken1);
+        int gameID = gameService.createGame(new CreateGameRequest("Game"), authToken1).gameID();
+        gameService.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, gameID), authToken1);
         Assertions.assertDoesNotThrow(() -> {
-            gameService.joinGame(new JoinGameRequest("BLACK", gameID), authToken2);
+            gameService.joinGame(new JoinGameRequest(ChessGame.TeamColor.BLACK, gameID), authToken2);
         }, "Failed to join game with one player");
     }
 
     @Test
     @DisplayName("Fail to join game with two players")
     public void joinGameWithTwoPlayers() {
-        int gameID = gameService.createGame("Game", authToken1);
-        gameService.joinGame(new JoinGameRequest("WHITE", gameID), authToken1);
-        gameService.joinGame(new JoinGameRequest("BLACK", gameID), authToken2);
+        int gameID = gameService.createGame(new CreateGameRequest("Game"), authToken1).gameID();
+        gameService.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, gameID), authToken1);
+        gameService.joinGame(new JoinGameRequest(ChessGame.TeamColor.BLACK, gameID), authToken2);
         Assertions.assertThrows(ForbiddenException.class, () -> {
-            gameService.joinGame(new JoinGameRequest("WHITE", gameID), authToken3);
+            gameService.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, gameID), authToken3);
         }, "Three players in game");
     }
 
     @Test
     @DisplayName("Fail to join game as second white player")
     public void joinGameAsSecondWhitePlayer() {
-        int gameID = gameService.createGame("Game", authToken1);
-        gameService.joinGame(new JoinGameRequest("WHITE", gameID), authToken1);
+        int gameID = gameService.createGame(new CreateGameRequest("Game"), authToken1).gameID();
+        gameService.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, gameID), authToken1);
         Assertions.assertThrows(ForbiddenException.class, () -> {
-            gameService.joinGame(new JoinGameRequest("WHITE", gameID), authToken2);
+            gameService.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, gameID), authToken2);
         }, "Two white players in game");
     }
 
@@ -134,16 +137,16 @@ public class GameServiceTests {
     @DisplayName("Fail to join nonexistent game")
     public void joinNonexistentGame() {
         Assertions.assertThrows(BadRequestException.class, () -> {
-            gameService.joinGame(new JoinGameRequest("WHITE", 0), authToken1);
+            gameService.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, 0), authToken1);
         }, "Joined nonexistent game");
     }
 
     @Test
     @DisplayName("Fail to join game without login")
     public void joinGameWithoutLogin() {
-        int gameID = gameService.createGame("Game", authToken1);
+        int gameID = gameService.createGame(new CreateGameRequest("Game"), authToken1).gameID();
         Assertions.assertThrows(UnauthorizedException.class, () -> {
-            gameService.joinGame(new JoinGameRequest("WHITE", gameID),
+            gameService.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, gameID),
                     "00000000-0000-0000-0000-000000000000");
         }, "Joined game without login");
     }

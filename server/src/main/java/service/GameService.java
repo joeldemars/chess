@@ -15,7 +15,7 @@ public class GameService {
     public GameService(GameDAO games, AuthDAO auths) {
         this.games = games;
         this.auths = auths;
-        this.gameID = 0;
+        this.gameID = 1;
     }
 
     public ListGamesResult listGames(String authToken)
@@ -28,16 +28,22 @@ public class GameService {
         }
     }
 
-    public int createGame(String gameName, String authToken)
+    public CreateGameResponse createGame(CreateGameRequest request, String authToken)
             throws BadRequestException, UnauthorizedException, InternalServerErrorException {
         authenticate(authToken);
         try {
-            if (games.listGames().stream().anyMatch((game) -> game.gameName().equals(gameName))) {
+            if (games.listGames().stream().anyMatch((game) -> game.gameName().equals(request.gameName()))) {
                 throw new BadRequestException("Error: bad request");
             } else {
                 try {
-                    games.createGame(new GameData(gameID, "", "", gameName, new ChessGame()));
-                    return gameID++;
+                    games.createGame(new GameData(
+                            gameID,
+                            null,
+                            null,
+                            request.gameName(),
+                            new ChessGame())
+                    );
+                    return new CreateGameResponse(gameID++);
                 } catch (DataAccessException e) {
                     throw new InternalServerErrorException("Error: failed to create game");
                 }
@@ -57,8 +63,8 @@ public class GameService {
             throw new BadRequestException("Error: bad request");
         }
         try {
-            if (request.playerColor().equals("WHITE")) {
-                if (game.whiteUsername().isEmpty()) {
+            if (request.playerColor() == ChessGame.TeamColor.WHITE) {
+                if (game.whiteUsername() == null) {
                     games.updateGame(game.gameID(), new GameData(
                                     game.gameID(),
                                     auth.username(),
@@ -70,8 +76,8 @@ public class GameService {
                 } else {
                     throw new ForbiddenException("Error: already taken");
                 }
-            } else if (request.playerColor().equals("BLACK")) {
-                if (game.blackUsername().isEmpty()) {
+            } else if (request.playerColor() == ChessGame.TeamColor.BLACK) {
+                if (game.blackUsername() == null) {
                     games.updateGame(game.gameID(), new GameData(
                                     game.gameID(),
                                     game.whiteUsername(),
@@ -83,6 +89,8 @@ public class GameService {
                 } else {
                     throw new ForbiddenException("Error: already taken");
                 }
+            } else {
+                throw new BadRequestException("Error: bad request");
             }
         } catch (DataAccessException e) {
             throw new BadRequestException("Error: bad request");

@@ -25,6 +25,9 @@ public class Server {
         Spark.post("/user", this::handleRegister);
         Spark.post("/session", this::handleLogin);
         Spark.delete("/session", this::handleLogout);
+        Spark.get("/game", this::handleListGames);
+        Spark.post("/game", this::handleCreateGame);
+        Spark.put("/game", this::handleJoinGame);
 
         Spark.awaitInitialization();
         return Spark.port();
@@ -63,6 +66,24 @@ public class Server {
 
     private String handleLogout(Request request, Response response) {
         return serializeResponse(response, () -> userService.logout(request.headers("authorization")));
+    }
+
+    private String handleListGames(Request request, Response response) {
+        return serializeResponse(response, () -> gameService.listGames(request.headers("authorization")));
+    }
+
+    private String handleCreateGame(Request request, Response response) {
+        return serializeResponse(response, () -> gameService.createGame(
+                serializeRequest(request.body(), CreateGameRequest.class),
+                request.headers("authorization"))
+        );
+    }
+
+    private String handleJoinGame(Request request, Response response) {
+        return serializeResponse(response, () -> gameService.joinGame(
+                serializeRequest(request.body(), JoinGameRequest.class),
+                request.headers("authorization"))
+        );
     }
 
     private <T> T serializeRequest(String body, Class<T> objectClass) {

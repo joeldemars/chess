@@ -29,7 +29,7 @@ public class ResetServiceTests {
         RegisterRequest registerRequest =
                 new RegisterRequest("user", "secret", "email@mail.com");
         String authToken = userService.register(registerRequest).authToken();
-        gameService.createGame("Game", authToken);
+        gameService.createGame(new CreateGameRequest("Game"), authToken);
         resetService.clearDatabase();
         Assertions.assertDoesNotThrow(() -> {
             userService.register(registerRequest);
