@@ -44,13 +44,14 @@ public class Server {
     }
 
     private Object handleClear(Request request, Response response) {
-        response.type("application/json");
-        try {
-            resetService.clearDatabase();
-            return "{}";
-        } catch (InternalServerErrorException e) {
-            return "{\"message\": \"" + e.getMessage() + "\"}";
-        }
+//        response.type("application/json");
+//        try {
+//            resetService.clearDatabase();
+//            return "{}";
+//        } catch (InternalServerErrorException e) {
+//            return "{\"message\": \"" + e.getMessage() + "\"}";
+//        }
+        return serializeResponse(response, () -> resetService.clearDatabase());
     }
 
     private String handleRegister(Request request, Response response) {
@@ -73,6 +74,18 @@ public class Server {
             Object result = handler.get();
             response.status(200);
             return new Gson().toJson(result);
+        } catch (HttpErrorException e) {
+            response.status(e.status);
+            return "{\"message\": \"" + e.getMessage() + "\"}";
+        }
+    }
+
+    private String serializeResponse(Response response, Runnable handler) {
+        response.type("application/json");
+        try {
+            handler.run();
+            response.status(200);
+            return "{}";
         } catch (HttpErrorException e) {
             response.status(e.status);
             return "{\"message\": \"" + e.getMessage() + "\"}";
