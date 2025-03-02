@@ -12,7 +12,7 @@ public class GameService {
     private AuthDAO auths;
     private int gameID;
 
-    GameService(GameDAO games, AuthDAO auths) {
+    public GameService(GameDAO games, AuthDAO auths) {
         this.games = games;
         this.auths = auths;
         this.gameID = 0;

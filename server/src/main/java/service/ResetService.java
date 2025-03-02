@@ -10,7 +10,7 @@ public class ResetService {
     private AuthDAO auths;
     private GameDAO games;
 
-    ResetService(UserDAO users, AuthDAO auths, GameDAO games) {
+    public ResetService(UserDAO users, AuthDAO auths, GameDAO games) {
         this.users = users;
         this.auths = auths;
         this.games = games;
