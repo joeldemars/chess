@@ -17,7 +17,8 @@ public class UserService {
 
     public RegisterResult register(RegisterRequest request)
             throws BadRequestException, ForbiddenException, InternalServerErrorException {
-        if (request.username().isEmpty() || request.password().isEmpty() || request.email().isEmpty()) {
+        if (request.username() == null || request.password() == null || request.email() == null
+                || request.username().isEmpty() || request.password().isEmpty() || request.email().isEmpty()) {
             throw new BadRequestException("Error: bad request");
         }
         try {

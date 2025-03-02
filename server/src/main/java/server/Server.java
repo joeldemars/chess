@@ -1,16 +1,18 @@
 package server;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import dataaccess.*;
-import service.GameService;
-import service.InternalServerErrorException;
-import service.ResetService;
-import service.UserService;
+import service.*;
 import spark.*;
+
+import java.util.function.Supplier;
 
 public class Server {
     private UserService userService;
     private GameService gameService;
     private ResetService resetService;
+    private Gson gson = new Gson();
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
@@ -20,6 +22,7 @@ public class Server {
 
         // Register your endpoints and handle exceptions here.
         Spark.delete("/db", this::handleClear);
+        Spark.post("/user", this::handleRegister);
 
         Spark.awaitInitialization();
         return Spark.port();
@@ -46,6 +49,32 @@ public class Server {
             resetService.clearDatabase();
             return "{}";
         } catch (InternalServerErrorException e) {
+            return "{\"message\": \"" + e.getMessage() + "\"}";
+        }
+    }
+
+    private String handleRegister(Request request, Response response) {
+        return serializeResponse(response, () -> userService.register(
+                serializeRequest(request.body(), RegisterRequest.class)
+        ));
+    }
+
+    private <T> T serializeRequest(String body, Class<T> objectClass) {
+        try {
+            return gson.fromJson(body, objectClass);
+        } catch (JsonSyntaxException e) {
+            throw new BadRequestException("Error: bad request");
+        }
+    }
+
+    private String serializeResponse(Response response, Supplier<Object> handler) {
+        response.type("application/json");
+        try {
+            Object result = handler.get();
+            response.status(200);
+            return new Gson().toJson(result);
+        } catch (HttpErrorException e) {
+            response.status(e.status);
             return "{\"message\": \"" + e.getMessage() + "\"}";
         }
     }
