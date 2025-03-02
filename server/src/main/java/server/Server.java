@@ -23,6 +23,8 @@ public class Server {
         // Register your endpoints and handle exceptions here.
         Spark.delete("/db", this::handleClear);
         Spark.post("/user", this::handleRegister);
+        Spark.post("/session", this::handleLogin);
+        Spark.delete("/session", this::handleLogout);
 
         Spark.awaitInitialization();
         return Spark.port();
@@ -43,14 +45,7 @@ public class Server {
         resetService = new ResetService(users, auths, games);
     }
 
-    private Object handleClear(Request request, Response response) {
-//        response.type("application/json");
-//        try {
-//            resetService.clearDatabase();
-//            return "{}";
-//        } catch (InternalServerErrorException e) {
-//            return "{\"message\": \"" + e.getMessage() + "\"}";
-//        }
+    private String handleClear(Request request, Response response) {
         return serializeResponse(response, () -> resetService.clearDatabase());
     }
 
@@ -58,6 +53,16 @@ public class Server {
         return serializeResponse(response, () -> userService.register(
                 serializeRequest(request.body(), RegisterRequest.class)
         ));
+    }
+
+    private String handleLogin(Request request, Response response) {
+        return serializeResponse(response, () -> userService.login(
+                serializeRequest(request.body(), LoginRequest.class)
+        ));
+    }
+
+    private String handleLogout(Request request, Response response) {
+        return serializeResponse(response, () -> userService.logout(request.headers("authorization")));
     }
 
     private <T> T serializeRequest(String body, Class<T> objectClass) {
