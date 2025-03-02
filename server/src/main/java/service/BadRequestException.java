@@ -3,8 +3,8 @@ package service;
 /**
  * 400 Bad Request
  */
-public class BadRequestException extends RuntimeException {
+public class BadRequestException extends HttpErrorException {
     public BadRequestException(String message) {
-        super(message);
+        super(400, message);
     }
 }

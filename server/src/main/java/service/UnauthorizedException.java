@@ -3,8 +3,8 @@ package service;
 /**
  * 401 Unauthorized
  */
-public class UnauthorizedException extends RuntimeException {
+public class UnauthorizedException extends HttpErrorException {
     public UnauthorizedException(String message) {
-        super(message);
+        super(401, message);
     }
 }

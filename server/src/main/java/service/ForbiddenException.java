@@ -3,8 +3,8 @@ package service;
 /**
  * 403 Forbidden
  */
-public class ForbiddenException extends RuntimeException {
+public class ForbiddenException extends HttpErrorException {
     public ForbiddenException(String message) {
-        super(message);
+        super(403, message);
     }
 }
