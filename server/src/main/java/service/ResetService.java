@@ -4,6 +4,7 @@ import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import dataaccess.UserDAO;
+import service.exception.InternalServerErrorException;
 
 public class ResetService {
     private UserDAO users;

@@ -1,4 +1,4 @@
-package service;
+package service.exception;
 
 /**
  * 401 Unauthorized

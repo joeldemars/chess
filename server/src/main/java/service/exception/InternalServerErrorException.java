@@ -1,4 +1,4 @@
-package service;
+package service.exception;
 
 /**
  * 500: Internal Server Error

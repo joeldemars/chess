@@ -8,6 +8,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import service.exception.BadRequestException;
+import service.exception.ForbiddenException;
+import service.exception.UnauthorizedException;
+import service.request.CreateGameRequest;
+import service.request.JoinGameRequest;
+import service.request.RegisterRequest;
+import service.result.ListGamesResult;
 
 public class GameServiceTests {
     private GameService gameService;

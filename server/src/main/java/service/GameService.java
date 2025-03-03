@@ -6,6 +6,14 @@ import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import model.AuthData;
 import model.GameData;
+import service.exception.BadRequestException;
+import service.exception.ForbiddenException;
+import service.exception.InternalServerErrorException;
+import service.exception.UnauthorizedException;
+import service.request.CreateGameRequest;
+import service.request.JoinGameRequest;
+import service.result.CreateGameResult;
+import service.result.ListGamesResult;
 
 public class GameService {
     private GameDAO games;
@@ -28,7 +36,7 @@ public class GameService {
         }
     }
 
-    public CreateGameResponse createGame(CreateGameRequest request, String authToken)
+    public CreateGameResult createGame(CreateGameRequest request, String authToken)
             throws BadRequestException, UnauthorizedException, InternalServerErrorException {
         authenticate(authToken);
         try {
@@ -43,7 +51,7 @@ public class GameService {
                             request.gameName(),
                             new ChessGame())
                     );
-                    return new CreateGameResponse(gameID++);
+                    return new CreateGameResult(gameID++);
                 } catch (DataAccessException e) {
                     throw new InternalServerErrorException("Error: failed to create game");
                 }
