@@ -16,13 +16,13 @@ public class ResetServiceTests {
 
     @BeforeEach
     public void resetService() {
-        UserDAO users = new MemoryUserDAO();
         AuthDAO auths = new MemoryAuthDAO();
         GameDAO games = new MemoryGameDAO();
+        UserDAO users = new MemoryUserDAO();
 
+        resetService = new ResetService(users, auths, games);
         userService = new UserService(users, auths);
         gameService = new GameService(games, auths);
-        resetService = new ResetService(users, auths, games);
     }
 
     @Test
