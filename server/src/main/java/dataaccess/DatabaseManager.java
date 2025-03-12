@@ -26,7 +26,7 @@ public class DatabaseManager {
             + "white_username VARCHAR(255) NOT NULL,"
             + "black_username VARCHAR(255) NOT NULL,"
             + "game_name VARCHAR(255) NOT NULL,"
-            + "game BLOB NOT NULL,"
+            + "game TEXT NOT NULL,"
             + "PRIMARY KEY (id)"
             + ");";
 
