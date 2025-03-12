@@ -61,18 +61,36 @@ public class MySqlUserDAOTests {
     @Test
     @DisplayName("Fail to get nonexistent user")
     void getNonexistentUser() {
-        Assertions.fail("Not implemented");
+        Assertions.assertThrows(DataAccessException.class,
+                () -> users.getUser("user"),
+                "Returned nonexistent user"
+        );
     }
 
     @Test
     @DisplayName("Successfully clear all users")
     void clearAllUsers() {
-        Assertions.fail("Not implemented");
+        Assertions.assertDoesNotThrow(
+                () -> users.createUser(new UserData("user", "secret1", "email1@mail.com")),
+                "Failed to create new user"
+        );
+        Assertions.assertDoesNotThrow(
+                () -> users.clearAll(),
+                "Failed to clear database"
+        );
+        Assertions.assertThrows(DataAccessException.class,
+                () -> users.getUser("user"),
+                "Returned deleted user"
+        );
     }
 
     @Test
     @DisplayName("Successfully clear empty database")
     void clearEmptyDatabase() {
-        Assertions.fail("Not implemented");
+        Assertions.assertDoesNotThrow(() -> {
+                    users.clearAll();
+                    users.clearAll();
+                },
+                "Failed to clear empty database");
     }
 }
