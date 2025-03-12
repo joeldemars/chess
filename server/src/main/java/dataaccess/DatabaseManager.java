@@ -8,6 +8,25 @@ public class DatabaseManager {
     private static final String USER;
     private static final String PASSWORD;
     private static final String CONNECTION_URL;
+    private static final String CREATE_TABLES_STATEMENT = "CREATE TABLE IF NOT EXISTS users ("
+            + "id INT NOT NULL AUTO_INCREMENT,"
+            + "username VARCHAR(255) NOT NULL,"
+            + "password CHAR(72) NOT NULL,"
+            + "email VARCHAR(255) NOT NULL,"
+            + "PRIMARY KEY (id)"
+            + ");"
+            + "CREATE TABLE IF NOT EXISTS auths ("
+            + "id INT NOT NULL AUTO_INCREMENT,"
+            + "token CHAR(32) NOT NULL,"
+            + "PRIMARY KEY (id)"
+            + ");"
+            + "CREATE TABLE IF NOT EXISTS games ("
+            + "id INT NOT NULL AUTO_INCREMENT,"
+            + "white_username VARCHAR(255) NOT NULL,"
+            + "black_username VARCHAR(255) NOT NULL,"
+            + "game_name VARCHAR(255) NOT NULL"
+            + "game VARCHAR(65535) NOT NULL"
+            + ");";
 
     /*
      * Load the database information for the db.properties file.
@@ -42,6 +61,9 @@ public class DatabaseManager {
             var conn = DriverManager.getConnection(CONNECTION_URL, USER, PASSWORD);
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
+                try (var preparedStatement2 = conn.prepareStatement(CREATE_TABLES_STATEMENT)) {
+                    preparedStatement2.executeUpdate();
+                }
             }
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
