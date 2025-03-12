@@ -58,7 +58,6 @@ public class MySqlGameDAOTests {
     @Test
     @DisplayName("Successfully get created game")
     void getCreatedGame() {
-        Assertions.fail("Not implemented");
         createNewGame();
         try {
             GameData game = games.getGame(1);
@@ -125,7 +124,7 @@ public class MySqlGameDAOTests {
             ChessGame newGame = new ChessGame();
             newGame.makeMove(new ChessMove(
                     new ChessPosition(2, 1),
-                    new ChessPosition(2, 3),
+                    new ChessPosition(3, 1),
                     null));
             games.updateGame(1, new GameData(
                     1,

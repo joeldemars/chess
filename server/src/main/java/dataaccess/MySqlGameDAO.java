@@ -1,5 +1,6 @@
 package dataaccess;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import model.GameData;
 
@@ -7,6 +8,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class MySqlGameDAO implements GameDAO {
@@ -32,7 +34,6 @@ public class MySqlGameDAO implements GameDAO {
                             insertStatement.setString(2, game.whiteUsername());
                             insertStatement.setString(3, game.blackUsername());
                             insertStatement.setString(4, game.gameName());
-                            String s = gson.toJson(game.game());
                             insertStatement.setString(5, gson.toJson(game.game()));
                             insertStatement.executeUpdate();
                         }
@@ -45,31 +46,79 @@ public class MySqlGameDAO implements GameDAO {
     }
 
     public GameData getGame(int gameID) throws DataAccessException {
-        throw new DataAccessException("Not implemented");
-//        try (Connection connection = DatabaseManager.getConnection()) {
-//            String query = "SELECT * FROM users WHERE username = ?;";
-//            try (PreparedStatement statement = connection.prepareStatement(query)) {
-//                statement.setString(1, username);
-//                try (ResultSet result = statement.executeQuery()) {
-//                    if (result.isBeforeFirst()) {
-//                        result.next();
-//                        return new UserData(username, result.getString("password"), result.getString("email"));
-//                    } else {
-//                        throw new DataAccessException("User not found");
-//                    }
-//                }
-//            }
-//        } catch (SQLException e) {
-//            throw new DataAccessException(e.getMessage());
-//        }
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String query = "SELECT * FROM games WHERE id = ?;";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setInt(1, gameID);
+                try (ResultSet result = statement.executeQuery()) {
+                    if (result.isBeforeFirst()) {
+                        result.next();
+                        return new GameData(
+                                gameID,
+                                result.getString("white_username"),
+                                result.getString("black_username"),
+                                result.getString("game_name"),
+                                gson.fromJson(result.getString("game"), ChessGame.class)
+                        );
+                    } else {
+                        throw new DataAccessException("Game not found");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
     }
 
     public Collection<GameData> listGames() throws DataAccessException {
-        throw new DataAccessException("Not implemented");
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String query = "SELECT * FROM games;";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                try (ResultSet result = statement.executeQuery()) {
+                    ArrayList<GameData> games = new ArrayList<>();
+                    while (result.next()) {
+                        games.add(new GameData(
+                                result.getInt("id"),
+                                result.getString("white_username"),
+                                result.getString("black_username"),
+                                result.getString("game_name"),
+                                gson.fromJson(result.getString("game"), ChessGame.class)
+                        ));
+                    }
+                    return games;
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
     }
 
     public void updateGame(int gameID, GameData game) throws DataAccessException {
-        throw new DataAccessException("Not implemented");
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String query = "SELECT * FROM games WHERE id = ?;";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setInt(1, gameID);
+                try (ResultSet result = statement.executeQuery()) {
+                    if (result.isBeforeFirst()) {
+                        String update = "UPDATE games "
+                                + "SET white_username = ?, black_username = ?, game_name = ?, game = ? "
+                                + "WHERE id = ?";
+                        try (PreparedStatement updateStatement = connection.prepareStatement(update)) {
+                            updateStatement.setString(1, game.whiteUsername());
+                            updateStatement.setString(2, game.blackUsername());
+                            updateStatement.setString(3, game.gameName());
+                            updateStatement.setString(4, gson.toJson(game.game()));
+                            updateStatement.setInt(5, gameID);
+                            updateStatement.executeUpdate();
+                        }
+                    } else {
+                        throw new DataAccessException("Game not found");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
     }
 
     public void clearAll() throws DataAccessException {
