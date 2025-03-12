@@ -1,13 +1,14 @@
 package dataaccess;
 
 import model.UserData;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 public class MySqlUserDAOTests {
-    private MySqlUserDAO users = new MySqlUserDAO();
+    private MySqlUserDAO users;
+
+    MySqlUserDAOTests() throws DataAccessException {
+        users = new MySqlUserDAO();
+    }
 
     @BeforeEach
     void resetDB() {

@@ -8,24 +8,25 @@ public class DatabaseManager {
     private static final String USER;
     private static final String PASSWORD;
     private static final String CONNECTION_URL;
-    private static final String CREATE_TABLES_STATEMENT = "CREATE TABLE IF NOT EXISTS users ("
+    private static final String CREATE_USER_TABLE_STATEMENT = "CREATE TABLE IF NOT EXISTS users ("
             + "id INT NOT NULL AUTO_INCREMENT,"
             + "username VARCHAR(255) NOT NULL,"
             + "password CHAR(72) NOT NULL,"
             + "email VARCHAR(255) NOT NULL,"
             + "PRIMARY KEY (id)"
-            + ");"
-            + "CREATE TABLE IF NOT EXISTS auths ("
+            + ");";
+    private static final String CREATE_AUTH_TABLE_STATEMENT = "CREATE TABLE IF NOT EXISTS auths ("
             + "id INT NOT NULL AUTO_INCREMENT,"
             + "token CHAR(32) NOT NULL,"
             + "PRIMARY KEY (id)"
-            + ");"
-            + "CREATE TABLE IF NOT EXISTS games ("
+            + ");";
+    private static final String CREATE_GAME_TABLE_STATEMENT = "CREATE TABLE IF NOT EXISTS games ("
             + "id INT NOT NULL AUTO_INCREMENT,"
             + "white_username VARCHAR(255) NOT NULL,"
             + "black_username VARCHAR(255) NOT NULL,"
-            + "game_name VARCHAR(255) NOT NULL"
-            + "game VARCHAR(65535) NOT NULL"
+            + "game_name VARCHAR(255) NOT NULL,"
+            + "game BLOB NOT NULL,"
+            + "PRIMARY KEY (id)"
             + ");";
 
     /*
@@ -61,8 +62,17 @@ public class DatabaseManager {
             var conn = DriverManager.getConnection(CONNECTION_URL, USER, PASSWORD);
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
-                try (var preparedStatement2 = conn.prepareStatement(CREATE_TABLES_STATEMENT)) {
+                try (var preparedStatement3 = conn.prepareStatement("USE " + DATABASE_NAME)) {
+                    preparedStatement3.executeUpdate();
+                }
+                try (var preparedStatement2 = conn.prepareStatement(CREATE_USER_TABLE_STATEMENT)) {
                     preparedStatement2.executeUpdate();
+                }
+                try (var preparedStatement3 = conn.prepareStatement(CREATE_AUTH_TABLE_STATEMENT)) {
+                    preparedStatement3.executeUpdate();
+                }
+                try (var preparedStatement4 = conn.prepareStatement(CREATE_GAME_TABLE_STATEMENT)) {
+                    preparedStatement4.executeUpdate();
                 }
             }
         } catch (SQLException e) {
