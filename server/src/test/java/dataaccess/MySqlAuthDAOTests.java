@@ -1,6 +1,6 @@
 package dataaccess;
 
-import model.UserData;
+import model.AuthData;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,92 +25,98 @@ public class MySqlAuthDAOTests {
     @Test
     @DisplayName("Successfully create new auth")
     void createNewAuth() {
-        Assertions.fail("Not implemented");
-//        Assertions.assertDoesNotThrow(
-//                () -> auths.createAuth(new UserData("user", "secret", "email@mail.com")),
-//                "Failed to create new user"
-//        );
+        Assertions.assertDoesNotThrow(
+                () -> auths.createAuth(new AuthData("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF", "user")),
+                "Failed to create new auth"
+        );
     }
 
     @Test
     @DisplayName("Fail to create duplicate auth")
     void createDuplicateAuth() {
-        Assertions.fail("Not implemented");
-//        Assertions.assertDoesNotThrow(
-//                () -> users.createUser(new UserData("user", "secret1", "email1@mail.com")),
-//                "Failed to create new user"
-//        );
-//        Assertions.assertThrows(
-//                DataAccessException.class,
-//                () -> users.createUser(new UserData("user", "secret2", "email2@mail.com")),
-//                "Created user with duplicate username"
-//        );
+        Assertions.assertDoesNotThrow(
+                () -> auths.createAuth(new AuthData("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF", "user1")),
+                "Failed to create new auth"
+        );
+        Assertions.assertThrows(
+                DataAccessException.class,
+                () -> auths.createAuth(new AuthData("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF", "user2")),
+                "Created duplicate auth"
+        );
     }
 
     @Test
     @DisplayName("Successfully get created auth")
     void getCreatedAuth() {
-//        Assertions.assertDoesNotThrow(
-//                () -> users.createUser(new UserData("user", "secret", "email@mail.com")),
-//                "Failed to create new user"
-//        );
-//        try {
-//            UserData user = users.getUser("user");
-//            Assertions.assertEquals("user", user.username());
-//            Assertions.assertEquals("email@mail.com", user.email());
-//        } catch (DataAccessException e) {
-//            Assertions.fail("Failed to get user");
-//        }
+        Assertions.assertDoesNotThrow(
+                () -> auths.createAuth(new AuthData("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF", "user")),
+                "Failed to create new auth"
+        );
+        try {
+            AuthData auth = auths.getAuth("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF");
+            Assertions.assertEquals("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF", auth.authToken());
+            Assertions.assertEquals("user", auth.username());
+        } catch (DataAccessException e) {
+            Assertions.fail("Failed to get auth");
+        }
     }
 
     @Test
     @DisplayName("Fail to get nonexistent auth")
     void getNonexistentAuth() {
-        Assertions.fail("Not implemented");
-//        Assertions.assertThrows(DataAccessException.class,
-//                () -> users.getUser("user"),
-//                "Returned nonexistent user"
-//        );
+        Assertions.assertThrows(DataAccessException.class,
+                () -> auths.getAuth("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"),
+                "Returned nonexistent auth"
+        );
     }
 
     @Test
     @DisplayName("Successfully delete created auth")
     void deleteCreatedAuth() {
-        Assertions.fail("Not implemented");
+        Assertions.assertDoesNotThrow(
+                () -> auths.createAuth(new AuthData("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF", "user")),
+                "Failed to create new auth"
+        );
+        Assertions.assertDoesNotThrow(
+                () -> auths.deleteAuth(new AuthData("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF", "user")),
+                "Failed to delete auth");
+        Assertions.assertThrows(
+                DataAccessException.class,
+                () -> auths.deleteAuth(new AuthData("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF", "user")),
+                "Failed to delete auth");
     }
 
     @Test
     @DisplayName("Fail to delete nonexistent auth")
     void deleteNonexistentAuth() {
-        Assertions.fail("Not implemented");
+        Assertions.assertThrows(
+                DataAccessException.class,
+                () -> auths.deleteAuth(new AuthData("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF", "user")),
+                "Deleted nonexistent auth");
     }
 
     @Test
     @DisplayName("Successfully clear all auths")
     void clearAllAuths() {
-        Assertions.fail("Not implemented");
-//        Assertions.assertDoesNotThrow(
-//                () -> users.createUser(new UserData("user", "secret1", "email1@mail.com")),
-//                "Failed to create new user"
-//        );
-//        Assertions.assertDoesNotThrow(
-//                () -> users.clearAll(),
-//                "Failed to clear database"
-//        );
-//        Assertions.assertThrows(DataAccessException.class,
-//                () -> users.getUser("user"),
-//                "Returned deleted user"
-//        );
+        Assertions.assertDoesNotThrow(
+                () -> auths.createAuth(new AuthData("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF", "user")),
+                "Failed to create new auth"
+        );
+        Assertions.assertDoesNotThrow(
+                () -> auths.clearAll(),
+                "Failed to clear auths"
+        );
+        Assertions.assertThrows(DataAccessException.class,
+                () -> auths.getAuth("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"),
+                "Got auth after clearing database");
     }
 
     @Test
     @DisplayName("Successfully clear empty database")
     void clearEmptyDatabase() {
-        Assertions.fail("Not implemented");
-//        Assertions.assertDoesNotThrow(() -> {
-//                    users.clearAll();
-//                    users.clearAll();
-//                },
-//                "Failed to clear empty database");
+        Assertions.assertDoesNotThrow(
+                () -> auths.clearAll(),
+                "Failed to clear empty database"
+        );
     }
 }
