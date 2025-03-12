@@ -38,7 +38,22 @@ public class MySqlUserDAO implements UserDAO {
     }
 
     public UserData getUser(String username) throws DataAccessException {
-        throw new DataAccessException("Not implemented");
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String query = "SELECT * FROM users WHERE username = ?;";
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
+                statement.setString(1, username);
+                try (ResultSet result = statement.executeQuery()) {
+                    if (result.isBeforeFirst()) {
+                        result.next();
+                        return new UserData(username, result.getString("password"), result.getString("email"));
+                    } else {
+                        throw new DataAccessException("User not found");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException(e.getMessage());
+        }
     }
 
     public void clearAll() throws DataAccessException {

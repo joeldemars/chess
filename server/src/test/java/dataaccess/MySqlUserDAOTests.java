@@ -54,7 +54,7 @@ public class MySqlUserDAOTests {
             Assertions.assertEquals("user", user.username());
             Assertions.assertEquals("email@mail.com", user.email());
         } catch (DataAccessException e) {
-            Assertions.fail("Failed to get user");
+            Assertions.fail("Failed to get user " + e.getMessage());
         }
     }
 
