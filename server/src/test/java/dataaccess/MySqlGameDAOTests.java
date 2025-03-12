@@ -1,7 +1,13 @@
 package dataaccess;
 
+import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
 import model.GameData;
 import org.junit.jupiter.api.*;
+import spark.utils.Assert;
+
+import java.util.Collection;
 
 public class MySqlGameDAOTests {
     private MySqlGameDAO games;
@@ -22,103 +28,151 @@ public class MySqlGameDAOTests {
     @Test
     @DisplayName("Successfully create new game")
     void createNewGame() {
-        Assertions.fail("Not implemented");
-//        Assertions.assertDoesNotThrow(
-//                () -> auths.createAuth(new AuthData("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF", "user")),
-//                "Failed to create new auth"
-//        );
+        Assertions.assertDoesNotThrow(
+                () -> games.createGame(new GameData(
+                        1,
+                        "user1",
+                        "user2",
+                        "Game",
+                        new ChessGame())),
+                "Failed to create new game"
+        );
     }
 
     @Test
-    @DisplayName("Fail to create game with duplicate name")
+    @DisplayName("Fail to create game with duplicate id")
     void createDuplicateGame() {
-        Assertions.fail("Not implemented");
-//        Assertions.assertDoesNotThrow(
-//                () -> auths.createAuth(new AuthData("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF", "user1")),
-//                "Failed to create new auth"
-//        );
-//        Assertions.assertThrows(
-//                DataAccessException.class,
-//                () -> auths.createAuth(new AuthData("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF", "user2")),
-//                "Created duplicate auth"
-//        );
+        createNewGame();
+        Assertions.assertThrows(
+                DataAccessException.class,
+                () -> games.createGame(new GameData(
+                        1,
+                        "user1",
+                        "user2",
+                        "Game 2",
+                        new ChessGame())),
+                "Created game with duplicate id"
+        );
     }
 
     @Test
     @DisplayName("Successfully get created game")
     void getCreatedGame() {
         Assertions.fail("Not implemented");
-//        Assertions.assertDoesNotThrow(
-//                () -> auths.createAuth(new AuthData("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF", "user")),
-//                "Failed to create new auth"
-//        );
-//        try {
-//            AuthData auth = auths.getAuth("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF");
-//            Assertions.assertEquals("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF", auth.authToken());
-//            Assertions.assertEquals("user", auth.username());
-//        } catch (DataAccessException e) {
-//            Assertions.fail("Failed to get auth");
-//        }
+        createNewGame();
+        try {
+            GameData game = games.getGame(1);
+            Assertions.assertEquals(1, game.gameID(), "Game ID does not match");
+            Assertions.assertEquals("user1", game.whiteUsername(), "White username does not match");
+            Assertions.assertEquals("user2", game.blackUsername(), "Black username does not match");
+            Assertions.assertEquals("Game", game.gameName(), "Game name does not match");
+        } catch (DataAccessException e) {
+            Assertions.fail("Failed to get game");
+        }
     }
 
     @Test
     @DisplayName("Fail to get nonexistent game")
     void getNonexistentGame() {
-        Assertions.fail("Not implemented");
-//        Assertions.assertThrows(DataAccessException.class,
-//                () -> auths.getAuth("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"),
-//                "Returned nonexistent auth"
-//        );
+        Assertions.assertThrows(DataAccessException.class,
+                () -> games.getGame(1),
+                "Returned nonexistent game"
+        );
     }
 
     @Test
     @DisplayName("Successfully list no games")
     void listNoGames() {
-        Assertions.fail("Not implemented");
+        Collection<GameData> gameList;
+        try {
+            gameList = games.listGames();
+            Assertions.assertTrue(
+                    gameList.isEmpty(),
+                    "Listed game when none created"
+            );
+        } catch (DataAccessException e) {
+            Assertions.fail("Failed to list games");
+        }
     }
 
     @Test
-    @DisplayName("Successfully list three games")
-    void listThreeGames() {
-        Assertions.fail("Not implemented");
+    @DisplayName("Successfully list two games")
+    void listTwoGames() {
+        createNewGame();
+        try {
+            games.createGame(new GameData(
+                    2,
+                    "user1",
+                    "user2",
+                    "Game 2",
+                    new ChessGame()));
+            try {
+                Collection<GameData> gameList = games.listGames();
+                Assertions.assertEquals(2, gameList.size(), "Returned wrong number of games");
+            } catch (DataAccessException e) {
+                Assertions.fail("Failed to list games");
+            }
+        } catch (DataAccessException e) {
+            Assertions.fail("Failed to create game");
+        }
     }
 
     @Test
     @DisplayName("Successfully update game")
     void updateGame() {
-        Assertions.fail("Not implemented");
+        createNewGame();
+        try {
+            ChessGame newGame = new ChessGame();
+            newGame.makeMove(new ChessMove(
+                    new ChessPosition(2, 1),
+                    new ChessPosition(2, 3),
+                    null));
+            games.updateGame(1, new GameData(
+                    1,
+                    "user1",
+                    "user2",
+                    "Game",
+                    newGame
+            ));
+        } catch (Exception e) {
+            Assertions.fail("Failed to update game");
+        }
     }
 
     @Test
     @DisplayName("Fail to update nonexistent game")
     void updateNonexistentGame() {
-        Assertions.fail("Not implemented");
+        Assertions.assertThrows(DataAccessException.class, () -> games.updateGame(
+                        1,
+                        new GameData(
+                                1,
+                                "user1",
+                                "user2",
+                                "Game",
+                                new ChessGame())
+                ),
+                "Updated nonexistent game");
     }
 
     @Test
     @DisplayName("Successfully clear all games")
     void clearAllGames() {
-        Assertions.fail("Not implemented");
-//        Assertions.assertDoesNotThrow(
-//                () -> auths.createAuth(new AuthData("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF", "user")),
-//                "Failed to create new auth"
-//        );
-//        Assertions.assertDoesNotThrow(
-//                () -> auths.clearAll(),
-//                "Failed to clear auths"
-//        );
-//        Assertions.assertThrows(DataAccessException.class,
-//                () -> auths.getAuth("FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"),
-//                "Got auth after clearing database");
+        createNewGame();
+        Assertions.assertDoesNotThrow(
+                () -> games.clearAll(),
+                "Failed to clear games"
+        );
+        Assertions.assertThrows(DataAccessException.class,
+                () -> games.getGame(1),
+                "Got game after clearing database");
     }
 
     @Test
     @DisplayName("Successfully clear empty database")
     void clearEmptyDatabase() {
-        Assertions.fail("Not implemented");
-//        Assertions.assertDoesNotThrow(
-//                () -> auths.clearAll(),
-//                "Failed to clear empty database"
-//        );
+        Assertions.assertDoesNotThrow(
+                () -> games.clearAll(),
+                "Failed to clear empty database"
+        );
     }
 }
