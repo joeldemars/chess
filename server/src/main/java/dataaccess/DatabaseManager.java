@@ -17,14 +17,14 @@ public class DatabaseManager {
             + ");";
     private static final String CREATE_AUTH_TABLE_STATEMENT = "CREATE TABLE IF NOT EXISTS auths ("
             + "id INT NOT NULL AUTO_INCREMENT,"
-            + "token CHAR(36) NOT NULL,"
+            + "token VARCHAR(255) NOT NULL,"
             + "username VARCHAR(255) NOT NULL,"
             + "PRIMARY KEY (id)"
             + ");";
     private static final String CREATE_GAME_TABLE_STATEMENT = "CREATE TABLE IF NOT EXISTS games ("
             + "id INT NOT NULL AUTO_INCREMENT,"
-            + "white_username VARCHAR(255) NOT NULL,"
-            + "black_username VARCHAR(255) NOT NULL,"
+            + "white_username VARCHAR(255),"
+            + "black_username VARCHAR(255),"
             + "game_name VARCHAR(255) NOT NULL,"
             + "game TEXT NOT NULL,"
             + "PRIMARY KEY (id)"

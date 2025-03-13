@@ -45,13 +45,17 @@ public class Server {
     }
 
     private void initializeServices() {
-        UserDAO users = new MemoryUserDAO();
-        AuthDAO auths = new MemoryAuthDAO();
-        GameDAO games = new MemoryGameDAO();
+        try {
+            UserDAO users = new MySqlUserDAO();
+            AuthDAO auths = new MySqlAuthDAO();
+            GameDAO games = new MySqlGameDAO();
 
-        userService = new UserService(users, auths);
-        gameService = new GameService(games, auths);
-        resetService = new ResetService(users, auths, games);
+            userService = new UserService(users, auths);
+            gameService = new GameService(games, auths);
+            resetService = new ResetService(users, auths, games);
+        } catch (DataAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private String handleClear(Request request, Response response) {

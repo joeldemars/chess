@@ -3,6 +3,7 @@ package service;
 import dataaccess.*;
 import model.AuthData;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 import service.exception.BadRequestException;
 import service.exception.ForbiddenException;
 import service.exception.InternalServerErrorException;
@@ -34,7 +35,8 @@ public class UserService {
             throw new ForbiddenException("Error: already taken");
         } catch (DataAccessException e) {
             try {
-                users.createUser(new UserData(request.username(), request.password(), request.email()));
+                String hashedPassword = BCrypt.hashpw(request.password(), BCrypt.gensalt());
+                users.createUser(new UserData(request.username(), hashedPassword, request.email()));
                 String authToken = UUID.randomUUID().toString();
                 auths.createAuth(new AuthData(authToken, request.username()));
                 return new RegisterResult(request.username(), authToken);
@@ -47,7 +49,7 @@ public class UserService {
     public LoginResult login(LoginRequest request) throws UnauthorizedException, InternalServerErrorException {
         try {
             UserData user = users.getUser(request.username());
-            if (user.password().equals(request.password())) {
+            if (BCrypt.checkpw(request.password(), user.password())) {
                 String authToken = UUID.randomUUID().toString();
                 try {
                     auths.createAuth(new AuthData(authToken, request.username()));
