@@ -15,21 +15,18 @@ public class MySqlUserDAO implements UserDAO {
     public void createUser(UserData user) throws DataAccessException {
         try (Connection connection = DatabaseManager.getConnection()) {
             String query = "SELECT username FROM users WHERE username = ?;";
-            try (PreparedStatement statement = connection.prepareStatement(query)) {
-                statement.setString(1, user.username());
-                try (ResultSet result = statement.executeQuery()) {
-                    if (result.isBeforeFirst()) {
-                        throw new DataAccessException("Username taken");
-                    } else {
-                        String insert = "INSERT INTO users (username, password, email) VALUES (?, ?, ?);";
-                        try (PreparedStatement insertStatement = connection.prepareStatement(insert)) {
-                            insertStatement.setString(1, user.username());
-                            insertStatement.setString(2, user.password());
-                            insertStatement.setString(3, user.email());
-                            insertStatement.executeUpdate();
-                        }
-                    }
-                }
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, user.username());
+            ResultSet result = statement.executeQuery();
+            if (result.isBeforeFirst()) {
+                throw new DataAccessException("Username taken");
+            } else {
+                String insert = "INSERT INTO users (username, password, email) VALUES (?, ?, ?);";
+                PreparedStatement insertStatement = connection.prepareStatement(insert);
+                insertStatement.setString(1, user.username());
+                insertStatement.setString(2, user.password());
+                insertStatement.setString(3, user.email());
+                insertStatement.executeUpdate();
             }
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
@@ -39,16 +36,14 @@ public class MySqlUserDAO implements UserDAO {
     public UserData getUser(String username) throws DataAccessException {
         try (Connection connection = DatabaseManager.getConnection()) {
             String query = "SELECT * FROM users WHERE username = ?;";
-            try (PreparedStatement statement = connection.prepareStatement(query)) {
-                statement.setString(1, username);
-                try (ResultSet result = statement.executeQuery()) {
-                    if (result.isBeforeFirst()) {
-                        result.next();
-                        return new UserData(username, result.getString("password"), result.getString("email"));
-                    } else {
-                        throw new DataAccessException("User not found");
-                    }
-                }
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, username);
+            ResultSet result = statement.executeQuery();
+            if (result.isBeforeFirst()) {
+                result.next();
+                return new UserData(username, result.getString("password"), result.getString("email"));
+            } else {
+                throw new DataAccessException("User not found");
             }
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
@@ -57,9 +52,8 @@ public class MySqlUserDAO implements UserDAO {
 
     public void clearAll() throws DataAccessException {
         try (Connection connection = DatabaseManager.getConnection()) {
-            try (PreparedStatement statement = connection.prepareStatement("TRUNCATE TABLE users;")) {
-                statement.executeUpdate();
-            }
+            PreparedStatement statement = connection.prepareStatement("TRUNCATE TABLE users;");
+            statement.executeUpdate();
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }
