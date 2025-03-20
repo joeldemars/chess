@@ -6,14 +6,14 @@ import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import model.AuthData;
 import model.GameData;
-import service.exception.BadRequestException;
-import service.exception.ForbiddenException;
-import service.exception.InternalServerErrorException;
-import service.exception.UnauthorizedException;
-import service.request.CreateGameRequest;
-import service.request.JoinGameRequest;
-import service.result.CreateGameResult;
-import service.result.ListGamesResult;
+import api.exception.BadRequestException;
+import api.exception.ForbiddenException;
+import api.exception.InternalServerErrorException;
+import api.exception.UnauthorizedException;
+import api.CreateGameRequest;
+import api.JoinGameRequest;
+import api.CreateGameResult;
+import api.ListGamesResult;
 
 public class GameService {
     private GameDAO games;

@@ -4,12 +4,12 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import dataaccess.*;
 import service.*;
-import service.exception.BadRequestException;
-import service.exception.HttpErrorException;
-import service.request.CreateGameRequest;
-import service.request.JoinGameRequest;
-import service.request.LoginRequest;
-import service.request.RegisterRequest;
+import api.exception.BadRequestException;
+import api.exception.HttpErrorException;
+import api.CreateGameRequest;
+import api.JoinGameRequest;
+import api.LoginRequest;
+import api.RegisterRequest;
 import spark.*;
 
 import java.util.function.Supplier;

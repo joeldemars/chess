@@ -4,14 +4,14 @@ import dataaccess.*;
 import model.AuthData;
 import model.UserData;
 import org.mindrot.jbcrypt.BCrypt;
-import service.exception.BadRequestException;
-import service.exception.ForbiddenException;
-import service.exception.InternalServerErrorException;
-import service.exception.UnauthorizedException;
-import service.request.LoginRequest;
-import service.request.RegisterRequest;
-import service.result.LoginResult;
-import service.result.RegisterResult;
+import api.exception.BadRequestException;
+import api.exception.ForbiddenException;
+import api.exception.InternalServerErrorException;
+import api.exception.UnauthorizedException;
+import api.LoginRequest;
+import api.RegisterRequest;
+import api.LoginResult;
+import api.RegisterResult;
 
 import java.util.UUID;
 

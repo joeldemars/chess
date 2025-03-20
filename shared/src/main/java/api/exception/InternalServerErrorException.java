@@ -1,4 +1,4 @@
-package service.exception;
+package api.exception;
 
 /**
  * 500: Internal Server Error

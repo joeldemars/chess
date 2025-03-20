@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import service.request.CreateGameRequest;
-import service.request.LoginRequest;
-import service.request.RegisterRequest;
+import api.CreateGameRequest;
+import api.LoginRequest;
+import api.RegisterRequest;
 
 public class ResetServiceTests {
     private UserService userService;

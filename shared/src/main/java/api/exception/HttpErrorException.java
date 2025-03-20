@@ -1,4 +1,4 @@
-package service.exception;
+package api.exception;
 
 public abstract class HttpErrorException extends RuntimeException {
     public int status;

@@ -1,4 +1,4 @@
-package service.exception;
+package api.exception;
 
 /**
  * 400 Bad Request
