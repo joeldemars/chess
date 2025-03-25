@@ -109,7 +109,7 @@ public class ServerFacadeTests {
     @Test
     @Description("Fail to log out before logging in")
     public void logOutWithoutLoggingIn() {
-        Assertions.assertThrows(UnauthorizedException.class,
+        Assertions.assertThrows(HttpErrorException.class,
                 () -> facade.logout(),
                 "Logged user out without authorization");
     }

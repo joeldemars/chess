@@ -67,12 +67,18 @@ public class ServerFacade {
                 }
             }
             http.connect();
-            http.getResponseCode();
-            if (responseType == null) {
-                return null;
+            int status = http.getResponseCode();
+            if (status != 200) {
+                try (InputStream error = http.getErrorStream()) {
+                    throw gson.fromJson(new InputStreamReader(error), HttpErrorException.class);
+                }
             } else {
-                try (InputStream input = http.getInputStream()) {
-                    return gson.fromJson(new InputStreamReader(input), responseType);
+                if (responseType == null) {
+                    return null;
+                } else {
+                    try (InputStream input = http.getInputStream()) {
+                        return gson.fromJson(new InputStreamReader(input), responseType);
+                    }
                 }
             }
         } catch (HttpErrorException e) {
