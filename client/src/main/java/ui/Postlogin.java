@@ -120,7 +120,7 @@ public class Postlogin {
             }
             facade.joinGame(new JoinGameRequest(color, games[id - 1].gameID()));
             System.out.println("Joined game " + games[id - 1].gameName() + ".");
-            // new Gameplay(facade).start();
+            new Gameplay(games[id - 1].game(), color).start();
         } catch (HttpErrorException e) {
             if (e.status == 403) {
                 System.out.println("Error: Already taken.");
@@ -143,7 +143,7 @@ public class Postlogin {
                 return;
             }
             System.out.println("Observing game " + games[id - 1].gameName() + ".");
-            // new Gameplay(facade, game, null).start();
+            new Gameplay(games[id - 1].game(), null).start();
         } catch (Exception e) {
             System.out.println("Error: Failed to observe game.");
         }
