@@ -7,6 +7,6 @@ public class Main {
 //        var piece = new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN);
 //        System.out.println("♕ 240 Chess Client: " + piece);
         ServerFacade facade = new ServerFacade("http://localhost:8080");
-        Prelogin.start(facade);
+        new Prelogin(facade).start();
     }
 }

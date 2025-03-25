@@ -1,7 +1,10 @@
 package ui;
 
+import api.LoginRequest;
+import api.exception.HttpErrorException;
 import serverfacade.ServerFacade;
 
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class Prelogin {
@@ -11,22 +14,57 @@ public class Prelogin {
         this.facade = facade;
     }
 
-    public static void start(ServerFacade facade) {
-        Prelogin prelogin = new Prelogin(facade);
+    public void start() {
+        printHelp();
         while (true) {
-            Scanner input = getInput();
-            String command = input.next().trim();
-            if (command.equals("quit")) {
-                System.out.println("Exiting...");
+            System.out.print(">>> ");
+            Scanner input = new Scanner(System.in);
+            String command = input.next().trim().toLowerCase();
+            if (command.equals("help")) {
+                printHelp();
+            } else if (command.equals("quit")) {
                 break;
+            } else if (command.equals("login")) {
+                handleLogin(input);
+            } else if (command.equals("register")) {
+//                handleRegister(input);
             } else {
-                System.out.println("Valid commands: quit");
+                System.out.println("Command not recognized.");
+                printHelp();
             }
         }
     }
 
-    private static Scanner getInput() {
+    private Scanner getInput() {
         return new Scanner(System.in);
     }
 
+    private static void printHelp() {
+        System.out.print("Available commands:\n"
+                + "help: Print available options\n"
+                + "quit: Exit chess\n"
+                + "login " + EscapeSequences.SET_TEXT_ITALIC + "<username> <password>"
+                + EscapeSequences.RESET_TEXT_ITALIC + ": Log in\n"
+                + "register " + EscapeSequences.SET_TEXT_ITALIC + "<username> <password> <email>"
+                + EscapeSequences.RESET_TEXT_ITALIC + ": Create a new account\n");
+    }
+
+    private void handleLogin(Scanner input) {
+        try {
+            String username = input.next();
+            String password = input.next();
+            facade.login(new LoginRequest(username, password));
+//            new Postlogin(facade).start();
+        } catch (NoSuchElementException e) {
+            System.out.println("Invalid usage.");
+            System.out.println("Usage: login " + EscapeSequences.SET_TEXT_ITALIC + "<username> <password>"
+                    + EscapeSequences.RESET_TEXT_ITALIC);
+        } catch (HttpErrorException e) {
+            if (e.status == 401) {
+                System.out.println("Error: Invalid credentials.");
+            } else {
+                System.out.println("Error: Could not log in.");
+            }
+        }
+    }
 }

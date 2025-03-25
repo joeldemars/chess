@@ -70,7 +70,8 @@ public class ServerFacade {
             int status = http.getResponseCode();
             if (status != 200) {
                 try (InputStream error = http.getErrorStream()) {
-                    throw gson.fromJson(new InputStreamReader(error), HttpErrorException.class);
+                    String message = new String(error.readAllBytes());
+                    throw new HttpErrorException(status, new String(error.readAllBytes()));
                 }
             } else {
                 if (responseType == null) {
