@@ -30,6 +30,11 @@ public class ServerFacadeTests {
         server.stop();
     }
 
+    @BeforeEach
+    void resetDatabases() {
+        facade.clear();
+    }
+
     @Test
     @Description("Successfully clear databases")
     public void clearDatabases() {
@@ -66,7 +71,7 @@ public class ServerFacadeTests {
     @Description("Fail to register duplicate user")
     public void registerDuplicateUser() {
         facade.register(new RegisterRequest("user", "secret", "mail@email.com"));
-        Assertions.assertThrows(ForbiddenException.class,
+        Assertions.assertThrows(HttpErrorException.class,
                 () -> facade.register(new RegisterRequest("user", "secret", "mail@email.com")),
                 "Registered user with duplicate username");
     }
@@ -88,7 +93,7 @@ public class ServerFacadeTests {
     @Description("Fail to log in with incorrect credentials")
     public void logInWithIncorrectCredentials() {
         facade.register(new RegisterRequest("user", "secret", "mail@email.com"));
-        Assertions.assertThrows(ForbiddenException.class,
+        Assertions.assertThrows(HttpErrorException.class,
                 () -> facade.login(new LoginRequest("user", "notsecret")),
                 "User logged in with incorrect credentials");
     }
@@ -96,9 +101,8 @@ public class ServerFacadeTests {
     @Test
     @Description("Successfully log out")
     public void logOut() {
-        RegisterResult result = facade.register(
-                new RegisterRequest("user", "secret", "mail@email.com"));
-        Assertions.assertDoesNotThrow(() -> facade.logout(result.authToken()),
+        facade.register(new RegisterRequest("user", "secret", "mail@email.com"));
+        Assertions.assertDoesNotThrow(() -> facade.logout(),
                 "Failed to log out");
     }
 
@@ -106,8 +110,8 @@ public class ServerFacadeTests {
     @Description("Fail to log out before logging in")
     public void logOutWithoutLoggingIn() {
         Assertions.assertThrows(UnauthorizedException.class,
-                () -> facade.logout("00000000-0000-0000-0000-000000000000"),
-                "Logged user out with invalid authToken");
+                () -> facade.logout(),
+                "Logged user out without authorization");
     }
 
     @Test
