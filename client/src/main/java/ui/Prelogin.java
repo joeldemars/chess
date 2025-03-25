@@ -56,6 +56,7 @@ public class Prelogin {
             String password = input.next();
             facade.login(new LoginRequest(username, password));
             new Postlogin(facade, username).start();
+            printHelp();
         } catch (NoSuchElementException e) {
             System.out.println("Invalid usage.");
             System.out.println("Usage: login " + EscapeSequences.SET_TEXT_ITALIC + "<username> <password>"
