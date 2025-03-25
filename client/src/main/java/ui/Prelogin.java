@@ -1,6 +1,7 @@
 package ui;
 
 import api.LoginRequest;
+import api.RegisterRequest;
 import api.exception.HttpErrorException;
 import serverfacade.ServerFacade;
 
@@ -27,7 +28,7 @@ public class Prelogin {
             } else if (command.equals("login")) {
                 handleLogin(input);
             } else if (command.equals("register")) {
-//                handleRegister(input);
+                handleRegister(input);
             } else {
                 System.out.println("Command not recognized.");
                 printHelp();
@@ -64,6 +65,26 @@ public class Prelogin {
                 System.out.println("Error: Invalid credentials.");
             } else {
                 System.out.println("Error: Could not log in.");
+            }
+        }
+    }
+
+    private void handleRegister(Scanner input) {
+        try {
+            String username = input.next();
+            String password = input.next();
+            String email = input.next();
+            facade.register(new RegisterRequest(username, password, email));
+            System.out.println("Successfully created new user " + username + ".");
+        } catch (NoSuchElementException e) {
+            System.out.println("Invalid usage.");
+            System.out.println("Usage: register " + EscapeSequences.SET_TEXT_ITALIC + "<username> <password> <email>"
+                    + EscapeSequences.RESET_TEXT_ITALIC);
+        } catch (HttpErrorException e) {
+            if (e.status == 403) {
+                System.out.println("Error: Username already taken.");
+            } else {
+                System.out.println("Error: Could not register.");
             }
         }
     }
