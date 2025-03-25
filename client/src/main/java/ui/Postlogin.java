@@ -43,6 +43,8 @@ public class Postlogin {
                 handleList();
             } else if (command.equals("join")) {
                 handleJoin(input);
+            } else if (command.equals("observe")) {
+                handleObserve(input);
             } else {
                 System.out.println("Command not recognized.");
                 printHelp();
@@ -103,25 +105,47 @@ public class Postlogin {
             }
             int id = input.nextInt();
             String colorString = input.next().toUpperCase();
+            if (id < 1 || id > games.length) {
+                System.out.println("Error: game not found.");
+                return;
+            }
             ChessGame.TeamColor color;
             if (colorString.equals("WHITE")) {
                 color = ChessGame.TeamColor.WHITE;
             } else if (colorString.equals("BLACK")) {
                 color = ChessGame.TeamColor.BLACK;
             } else {
-                throw new BadRequestException("Error: bad request");
+                System.out.println("Error: Color must be either white or black.");
+                return;
             }
             facade.joinGame(new JoinGameRequest(color, games[id - 1].gameID()));
-            // new Gameplay(facade).start();
             System.out.println("Joined game " + games[id - 1].gameName() + ".");
+            // new Gameplay(facade).start();
         } catch (HttpErrorException e) {
-            if (e.status == 400) {
-                System.out.println("Error: Color must be either white or black.");
-            } else if (e.status == 403) {
+            if (e.status == 403) {
                 System.out.println("Error: Already taken.");
             } else {
                 System.out.println("Error: Failed to join game.");
             }
+        } catch (Exception e) {
+            System.out.println("Error: Failed to join game.");
+        }
+    }
+
+    private void handleObserve(Scanner input) {
+        try {
+            if (games == null) {
+                games = facade.listGames().games();
+            }
+            int id = input.nextInt();
+            if (id < 1 || id > games.length) {
+                System.out.println("Error: game not found.");
+                return;
+            }
+            System.out.println("Observing game " + games[id - 1].gameName() + ".");
+            // new Gameplay(facade, game, null).start();
+        } catch (Exception e) {
+            System.out.println("Error: Failed to observe game.");
         }
     }
 }
