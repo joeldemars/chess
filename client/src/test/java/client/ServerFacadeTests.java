@@ -1,12 +1,10 @@
 package client;
 
-import api.LoginRequest;
-import api.LoginResult;
-import api.RegisterRequest;
-import api.RegisterResult;
+import api.*;
 import api.exception.ForbiddenException;
 import api.exception.HttpErrorException;
 import api.exception.UnauthorizedException;
+import chess.ChessGame;
 import jdk.jfr.Description;
 import org.junit.jupiter.api.*;
 import server.Server;
@@ -117,36 +115,64 @@ public class ServerFacadeTests {
     @Test
     @Description("Successfully list one game")
     public void listOneGame() {
-        Assertions.fail("Not implemented");
+        facade.register(new RegisterRequest("user", "secret", "mail@email.com"));
+        facade.createGame(new CreateGameRequest("Game"));
+        try {
+            ListGamesResult result = facade.listGames();
+            Assertions.assertEquals(1, result.games().length, "Found incorrect number of games");
+        } catch (HttpErrorException e) {
+            Assertions.fail("Failed to list games");
+        }
     }
 
     @Test
     @Description("Fail to list games without logging in")
     public void listGamesWithoutLoggingIn() {
-        Assertions.fail("Not implemented");
+        Assertions.assertThrows(HttpErrorException.class, () -> facade.listGames(),
+                "Listed games without logging in");
     }
 
     @Test
     @Description("Successfully create new game")
     public void createNewGame() {
-        Assertions.fail("Not implemented");
+        facade.register(new RegisterRequest("user", "secret", "mail@email.com"));
+        try {
+            facade.createGame(new CreateGameRequest("Game"));
+        } catch (HttpErrorException e) {
+            Assertions.fail("Failed to create game");
+        }
     }
 
     @Test
     @Description("Fail to create duplicate game")
     public void createDuplicateGame() {
-        Assertions.fail("Not implemented");
+        try {
+            facade.register(new RegisterRequest("user", "secret", "mail@email.com"));
+            facade.createGame(new CreateGameRequest("Game"));
+            Assertions.assertThrows(HttpErrorException.class,
+                    () -> facade.createGame(new CreateGameRequest("Game")),
+                    "Created game with duplicate name");
+        } catch (HttpErrorException e) {
+            Assertions.fail("Failed to create game");
+        }
+
     }
 
     @Test
     @Description("Successfully join game")
     public void joinGame() {
-        Assertions.fail("Not implemented");
+        facade.register(new RegisterRequest("user", "secret", "mail@email.com"));
+        facade.createGame(new CreateGameRequest("Game"));
+        Assertions.assertDoesNotThrow(() -> facade.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, 1)),
+                "Failed to join game");
     }
 
     @Test
     @Description("Fail to join nonexistent game")
     public void joinNonexistentGame() {
-        Assertions.fail("Not implemented");
+        facade.register(new RegisterRequest("user", "secret", "mail@email.com"));
+        Assertions.assertThrows(HttpErrorException.class,
+                () -> facade.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, 1)),
+                "Joined nonexistent game");
     }
 }
