@@ -18,7 +18,7 @@ public class Prelogin {
     public void start() {
         printHelp();
         while (true) {
-            System.out.print(">>> ");
+            System.out.print("Not logged in >>> ");
             Scanner input = new Scanner(System.in);
             String command = input.next().trim().toLowerCase();
             if (command.equals("help")) {
@@ -55,7 +55,7 @@ public class Prelogin {
             String username = input.next();
             String password = input.next();
             facade.login(new LoginRequest(username, password));
-//            new Postlogin(facade).start();
+            new Postlogin(facade, username).start();
         } catch (NoSuchElementException e) {
             System.out.println("Invalid usage.");
             System.out.println("Usage: login " + EscapeSequences.SET_TEXT_ITALIC + "<username> <password>"
