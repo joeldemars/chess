@@ -1,7 +1,12 @@
 package ui;
 
 import api.CreateGameRequest;
+import api.JoinGameRequest;
+import api.ListGamesResult;
+import api.exception.BadRequestException;
 import api.exception.HttpErrorException;
+import chess.ChessGame;
+import model.GameData;
 import serverfacade.ServerFacade;
 
 import java.util.NoSuchElementException;
@@ -10,6 +15,7 @@ import java.util.Scanner;
 public class Postlogin {
     private final ServerFacade facade;
     private final String user;
+    private GameData[] games;
 
     public Postlogin(ServerFacade facade, String user) {
         this.facade = facade;
@@ -33,8 +39,10 @@ public class Postlogin {
                 }
             } else if (command.equals("create")) {
                 handleCreate(input);
-//            } else if (command.equals("register")) {
-//                handleRegister(input);
+            } else if (command.equals("list")) {
+                handleList();
+            } else if (command.equals("join")) {
+                handleJoin(input);
             } else {
                 System.out.println("Command not recognized.");
                 printHelp();
@@ -69,6 +77,50 @@ public class Postlogin {
                 System.out.println("Error: Game name already taken.");
             } else {
                 System.out.println("Error: Failed to create game.");
+            }
+        }
+    }
+
+    private void handleList() {
+        try {
+            games = facade.listGames().games();
+            for (int i = 0; i < games.length; i++) {
+                String white = games[i].whiteUsername() != null ? games[i].whiteUsername() : "none";
+                String black = games[i].blackUsername() != null ? games[i].blackUsername() : "none";
+                System.out.println((i + 1) + ": " + games[i].gameName());
+                System.out.println("\tWhite player: " + white);
+                System.out.println("\tBlack player: " + black);
+            }
+        } catch (HttpErrorException e) {
+            System.out.println("Error: Failed to list games.");
+        }
+    }
+
+    private void handleJoin(Scanner input) {
+        try {
+            if (games == null) {
+                games = facade.listGames().games();
+            }
+            int id = input.nextInt();
+            String colorString = input.next().toUpperCase();
+            ChessGame.TeamColor color;
+            if (colorString.equals("WHITE")) {
+                color = ChessGame.TeamColor.WHITE;
+            } else if (colorString.equals("BLACK")) {
+                color = ChessGame.TeamColor.BLACK;
+            } else {
+                throw new BadRequestException("Error: bad request");
+            }
+            facade.joinGame(new JoinGameRequest(color, games[id - 1].gameID()));
+            // new Gameplay(facade).start();
+            System.out.println("Joined game " + games[id - 1].gameName() + ".");
+        } catch (HttpErrorException e) {
+            if (e.status == 400) {
+                System.out.println("Error: Color must be either white or black.");
+            } else if (e.status == 403) {
+                System.out.println("Error: Already taken.");
+            } else {
+                System.out.println("Error: Failed to join game.");
             }
         }
     }
