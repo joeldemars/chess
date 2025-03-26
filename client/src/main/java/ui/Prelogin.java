@@ -77,6 +77,7 @@ public class Prelogin {
             String email = input.next();
             facade.register(new RegisterRequest(username, password, email));
             System.out.println("Successfully created new user " + username + ".");
+            new Postlogin(facade, username).start();
         } catch (NoSuchElementException e) {
             System.out.println("Invalid usage.");
             System.out.println("Usage: register " + EscapeSequences.SET_TEXT_ITALIC + "<username> <password> <email>"

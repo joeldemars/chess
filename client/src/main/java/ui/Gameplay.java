@@ -17,6 +17,7 @@ public class Gameplay {
     }
 
     public void start() {
+        printBoard();
         printHelp();
         while (true) {
             System.out.print(">>> ");
