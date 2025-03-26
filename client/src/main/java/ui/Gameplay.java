@@ -38,7 +38,8 @@ public class Gameplay {
     private void printHelp() {
         System.out.print("Available commands:\n"
                 + "help: Print available options\n"
-                + "board: Print the board\n");
+                + "board: Print the board\n"
+                + "exit: Return to game selection\n");
     }
 
     private void printBoard() {
