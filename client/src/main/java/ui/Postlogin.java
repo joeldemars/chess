@@ -100,9 +100,7 @@ public class Postlogin {
 
     private void handleJoin(Scanner input) {
         try {
-            if (games == null) {
-                games = facade.listGames().games();
-            }
+            games = facade.listGames().games();
             int id = input.nextInt();
             String colorString = input.next().toUpperCase();
             if (id < 1 || id > games.length) {
@@ -134,9 +132,7 @@ public class Postlogin {
 
     private void handleObserve(Scanner input) {
         try {
-            if (games == null) {
-                games = facade.listGames().games();
-            }
+            games = facade.listGames().games();
             int id = input.nextInt();
             if (id < 1 || id > games.length) {
                 System.out.println("Error: game not found.");
