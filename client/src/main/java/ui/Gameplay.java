@@ -27,8 +27,15 @@ public class Gameplay {
                 printHelp();
             } else if (command.equals("board")) {
                 printBoard();
-            } else if (command.equals("exit")) {
+            } else if (command.equals("leave")) {
+                // TODO: Remove player from game if not observer (i.e. team != null)
                 break;
+            } else if (command.equals("move")) {
+                System.out.println("Unimplemented");
+            } else if (command.equals("resign")) {
+                System.out.println("Unimplemented");
+            } else if (command.equals("highlight")) {
+                System.out.println("Unimplemented");
             } else {
                 System.out.println("Command not recognized.");
                 printHelp();
@@ -40,7 +47,14 @@ public class Gameplay {
         System.out.print("Available commands:\n"
                 + "help: Print available options\n"
                 + "board: Print the board\n"
-                + "exit: Return to game selection\n");
+                + "leave: Leave game and return to game selection\n"
+                + "move " + EscapeSequences.SET_TEXT_ITALIC + "<start> <end>"
+                + EscapeSequences.RESET_TEXT_ITALIC + ": Move the piece from the start position "
+                + "to the end position\n"
+                + "resign: Resign from the game\n"
+                + "highlight " + EscapeSequences.SET_TEXT_ITALIC + "<start>"
+                + EscapeSequences.RESET_TEXT_ITALIC + ": Highlight all legal moves "
+                + "starting at the selected square\n");
     }
 
     private void printBoard() {
