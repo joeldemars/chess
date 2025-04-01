@@ -4,16 +4,26 @@ import chess.ChessGame;
 import chess.ChessPiece;
 import chess.ChessPosition;
 
+import javax.websocket.*;
+import java.net.URI;
 import java.util.Scanner;
-import java.util.SplittableRandom;
 
-public class Gameplay {
+public class Gameplay extends Endpoint {
     private ChessGame game;
     private ChessGame.TeamColor team;
+    private Session session;
 
-    public Gameplay(ChessGame game, ChessGame.TeamColor team) {
+    public Gameplay(ChessGame game, ChessGame.TeamColor team) throws Exception {
         this.game = game;
         this.team = team;
+        var container = ContainerProvider.getWebSocketContainer();
+        session = container.connectToServer(
+                this, new URI("ws://localhost:8080/ws")
+        );
+        session.addMessageHandler((MessageHandler.Whole<String>) this::handleMessage);
+    }
+
+    public void onOpen(Session session, EndpointConfig config) {
     }
 
     public void start() {
@@ -134,5 +144,9 @@ public class Gameplay {
             }
             System.out.print(EscapeSequences.RESET_TEXT_BOLD_FAINT);
         }
+    }
+
+    private void handleMessage(String message) {
+        System.out.println(message);
     }
 }
