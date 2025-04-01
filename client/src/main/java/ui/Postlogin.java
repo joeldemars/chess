@@ -2,8 +2,6 @@ package ui;
 
 import api.CreateGameRequest;
 import api.JoinGameRequest;
-import api.ListGamesResult;
-import api.exception.BadRequestException;
 import api.exception.HttpErrorException;
 import chess.ChessGame;
 import model.GameData;
@@ -15,11 +13,13 @@ import java.util.Scanner;
 public class Postlogin {
     private final ServerFacade facade;
     private final String user;
+    private final String authToken;
     private GameData[] games;
 
-    public Postlogin(ServerFacade facade, String user) {
+    public Postlogin(ServerFacade facade, String user, String authToken) {
         this.facade = facade;
         this.user = user;
+        this.authToken = authToken;
     }
 
     public void start() {
@@ -118,7 +118,7 @@ public class Postlogin {
             }
             facade.joinGame(new JoinGameRequest(color, games[id - 1].gameID()));
             System.out.println("Joined game " + games[id - 1].gameName() + ".");
-            new Gameplay(games[id - 1].game(), color).start();
+            new Gameplay(games[id - 1].game(), color, user, authToken, games[id - 1].gameID()).start();
         } catch (HttpErrorException e) {
             if (e.status == 403) {
                 System.out.println("Error: Already taken.");
@@ -139,7 +139,7 @@ public class Postlogin {
                 return;
             }
             System.out.println("Observing game " + games[id - 1].gameName() + ".");
-            new Gameplay(games[id - 1].game(), null).start();
+            new Gameplay(games[id - 1].game(), null, user, authToken, games[id - 1].gameID()).start();
         } catch (Exception e) {
             System.out.println("Error: Failed to observe game.");
         }

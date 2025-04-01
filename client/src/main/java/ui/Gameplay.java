@@ -3,6 +3,9 @@ package ui;
 import chess.ChessGame;
 import chess.ChessPiece;
 import chess.ChessPosition;
+import com.google.gson.Gson;
+import websocket.commands.ConnectCommand;
+import websocket.commands.UserGameCommand;
 
 import javax.websocket.*;
 import java.net.URI;
@@ -10,24 +13,34 @@ import java.util.Scanner;
 
 public class Gameplay extends Endpoint {
     private ChessGame game;
-    private ChessGame.TeamColor team;
+    private final ChessGame.TeamColor team;
+    private final String user;
+    private final String authToken;
+    private final int gameID;
     private Session session;
+    private final Gson gson = new Gson();
 
-    public Gameplay(ChessGame game, ChessGame.TeamColor team) throws Exception {
+    public Gameplay(ChessGame game, ChessGame.TeamColor team, String user, String authToken, int gameID) throws Exception {
         this.game = game;
         this.team = team;
-        var container = ContainerProvider.getWebSocketContainer();
-        session = container.connectToServer(
+        this.user = user;
+        this.authToken = authToken;
+        this.gameID = gameID;
+        session = ContainerProvider.getWebSocketContainer().connectToServer(
                 this, new URI("ws://localhost:8080/ws")
         );
-        session.addMessageHandler((MessageHandler.Whole<String>) this::handleMessage);
+        session.addMessageHandler(new MessageHandler.Whole<String>() {
+            public void onMessage(String message) {
+                handleMessage(message);
+            }
+        });
     }
 
     public void onOpen(Session session, EndpointConfig config) {
     }
 
-    public void start() {
-        printBoard();
+    public void start() throws Exception {
+        session.getBasicRemote().sendText(gson.toJson(new ConnectCommand(authToken, gameID, user, team)));
         printHelp();
         while (true) {
             System.out.print(">>> ");
@@ -147,6 +160,6 @@ public class Gameplay extends Endpoint {
     }
 
     private void handleMessage(String message) {
-        System.out.println(message);
+        System.out.println("Received message: " + message);
     }
 }

@@ -1,7 +1,9 @@
 package ui;
 
 import api.LoginRequest;
+import api.LoginResult;
 import api.RegisterRequest;
+import api.RegisterResult;
 import api.exception.HttpErrorException;
 import serverfacade.ServerFacade;
 
@@ -54,8 +56,8 @@ public class Prelogin {
         try {
             String username = input.next();
             String password = input.next();
-            facade.login(new LoginRequest(username, password));
-            new Postlogin(facade, username).start();
+            LoginResult result = facade.login(new LoginRequest(username, password));
+            new Postlogin(facade, username, result.authToken()).start();
             printHelp();
         } catch (NoSuchElementException e) {
             System.out.println("Invalid usage.");
@@ -75,9 +77,9 @@ public class Prelogin {
             String username = input.next();
             String password = input.next();
             String email = input.next();
-            facade.register(new RegisterRequest(username, password, email));
+            RegisterResult result = facade.register(new RegisterRequest(username, password, email));
             System.out.println("Successfully created new user " + username + ".");
-            new Postlogin(facade, username).start();
+            new Postlogin(facade, username, result.authToken()).start();
         } catch (NoSuchElementException e) {
             System.out.println("Invalid usage.");
             System.out.println("Usage: register " + EscapeSequences.SET_TEXT_ITALIC + "<username> <password> <email>"
