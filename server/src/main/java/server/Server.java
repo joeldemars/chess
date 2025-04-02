@@ -18,6 +18,7 @@ public class Server {
     private UserService userService;
     private GameService gameService;
     private ResetService resetService;
+    private WebSocketServer webSocketServer;
     private Gson gson = new Gson();
 
     public int run(int desiredPort) {
@@ -27,7 +28,7 @@ public class Server {
         initializeServices();
 
         // Register your endpoints and handle exceptions here.
-        Spark.webSocket("/ws", WebSocketServer.class);
+        Spark.webSocket("/ws", webSocketServer);
         Spark.delete("/db", this::handleClear);
         Spark.post("/user", this::handleRegister);
         Spark.post("/session", this::handleLogin);
@@ -54,6 +55,8 @@ public class Server {
             userService = new UserService(users, auths);
             gameService = new GameService(games, auths);
             resetService = new ResetService(users, auths, games);
+
+            webSocketServer = new WebSocketServer(auths, games);
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }

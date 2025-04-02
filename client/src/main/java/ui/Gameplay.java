@@ -6,6 +6,9 @@ import chess.ChessPosition;
 import com.google.gson.Gson;
 import websocket.commands.ConnectCommand;
 import websocket.commands.UserGameCommand;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
+import websocket.messages.ServerMessage;
 
 import javax.websocket.*;
 import java.net.URI;
@@ -160,6 +163,18 @@ public class Gameplay extends Endpoint {
     }
 
     private void handleMessage(String message) {
-        System.out.println("Received message: " + message);
+        ServerMessage m = gson.fromJson(message, ServerMessage.class);
+        if (m.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION) {
+            String notification = gson.fromJson(message, NotificationMessage.class).getMessage();
+            System.out.println("\r" + EscapeSequences.ERASE_LINE + notification);
+            System.out.print(">>> ");
+        } else if (m.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME) {
+            game = gson.fromJson(message, LoadGameMessage.class).getGame();
+            System.out.print("\r" + EscapeSequences.ERASE_LINE);
+            printBoard();
+            System.out.print(">>> ");
+        } else {
+            System.out.println("Received message: " + message);
+        }
     }
 }
