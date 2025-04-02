@@ -5,10 +5,12 @@ import com.google.gson.Gson;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
+import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import websocket.commands.ConnectCommand;
+import websocket.commands.LeaveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
@@ -36,6 +38,8 @@ public class WebSocketServer {
         try {
             if (command.getCommandType() == UserGameCommand.CommandType.CONNECT) {
                 handleConnect(session, gson.fromJson(message, ConnectCommand.class));
+            } else if (command.getCommandType() == UserGameCommand.CommandType.LEAVE) {
+                handleLeave(session, gson.fromJson(message, LeaveCommand.class));
             }
         } catch (Exception e) {
             System.out.println("Error when handling message: " + e.getMessage());
@@ -62,12 +66,39 @@ public class WebSocketServer {
         } else {
             role = "an observer.";
         }
-        String notification = gson.toJson(new NotificationMessage(command.user + " joined game as " + role));
+        String notification = command.user + " joined the game as " + role;
         for (Session player : room) {
-            player.getRemote().sendString(notification);
+            try {
+                sendNotification(player, notification);
+            } catch (IOException e) {
+            }
         }
         room.add(session);
         sendLoadGame(session, games.getGame(command.getGameID()).game());
+    }
+
+    private void handleLeave(Session session, LeaveCommand command) throws Exception {
+        HashSet<Session> room = rooms.get(command.getGameID());
+        room.remove(session);
+        GameData game = games.getGame(command.getGameID());
+        if (command.team == ChessGame.TeamColor.WHITE) {
+            games.updateGame(command.getGameID(),
+                    new GameData(game.gameID(), null, game.blackUsername(), game.gameName(), game.game()));
+        } else if (command.team == ChessGame.TeamColor.BLACK) {
+            games.updateGame(command.getGameID(),
+                    new GameData(game.gameID(), game.whiteUsername(), null, game.gameName(), game.game()));
+        }
+        String notification = command.user + " left the game.";
+        for (Session player : room) {
+            try {
+                sendNotification(player, notification);
+            } catch (IOException e) {
+            }
+        }
+    }
+
+    private void sendNotification(Session session, String notification) throws IOException {
+        session.getRemote().sendString(gson.toJson(new NotificationMessage(notification)));
     }
 
     private void sendError(Session session, String errorMessage) throws IOException {

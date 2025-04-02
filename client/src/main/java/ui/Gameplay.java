@@ -5,6 +5,7 @@ import chess.ChessPiece;
 import chess.ChessPosition;
 import com.google.gson.Gson;
 import websocket.commands.ConnectCommand;
+import websocket.commands.LeaveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
@@ -54,7 +55,7 @@ public class Gameplay extends Endpoint {
             } else if (command.equals("board")) {
                 printBoard();
             } else if (command.equals("leave")) {
-                // TODO: Remove player from game if not observer (i.e. team != null)
+                session.getBasicRemote().sendText(gson.toJson(new LeaveCommand(authToken, gameID, user, team)));
                 break;
             } else if (command.equals("move")) {
                 System.out.println("Unimplemented");
