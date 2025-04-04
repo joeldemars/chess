@@ -58,9 +58,9 @@ public class Gameplay extends Endpoint {
             } else if (command.equals("leave")) {
                 session.getBasicRemote().sendText(gson.toJson(new LeaveCommand(authToken, gameID, user, team)));
                 break;
-            } else if (command.equals("move")) {
+            } else if (command.equals("move") && team != null) {
                 handleMove(input);
-            } else if (command.equals("resign")) {
+            } else if (command.equals("resign") && team != null) {
                 handleResign();
             } else if (command.equals("highlight")) {
                 System.out.println("Unimplemented");
@@ -72,17 +72,19 @@ public class Gameplay extends Endpoint {
     }
 
     private void printHelp() {
-        System.out.print("Available commands:\n"
+        System.out.println("Available commands:\n"
                 + "help: Print available options\n"
                 + "board: Print the board\n"
-                + "leave: Leave game and return to game selection\n"
-                + "move " + EscapeSequences.SET_TEXT_ITALIC + "<start> <end>"
-                + EscapeSequences.RESET_TEXT_ITALIC + ": Move the piece from the start position "
-                + "to the end position\n"
-                + "resign: Resign from the game\n"
-                + "highlight " + EscapeSequences.SET_TEXT_ITALIC + "<start>"
+                + "leave: Leave game and return to game selection");
+        if (team != null) {
+            System.out.println("move " + EscapeSequences.SET_TEXT_ITALIC + "<start> <end>"
+                    + EscapeSequences.RESET_TEXT_ITALIC + ": Move the piece from the start position "
+                    + "to the end position\n"
+                    + "resign: Resign from the game");
+        }
+        System.out.println("highlight " + EscapeSequences.SET_TEXT_ITALIC + "<start>"
                 + EscapeSequences.RESET_TEXT_ITALIC + ": Highlight all legal moves "
-                + "starting at the selected square\n");
+                + "starting at the selected square");
     }
 
     private void handleMove(Scanner input) {
