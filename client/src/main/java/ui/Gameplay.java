@@ -13,6 +13,8 @@ import websocket.messages.ServerMessage;
 
 import javax.websocket.*;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
@@ -54,7 +56,7 @@ public class Gameplay extends Endpoint {
             if (command.equals("help")) {
                 printHelp();
             } else if (command.equals("board")) {
-                printBoard();
+                printBoard(null);
             } else if (command.equals("leave")) {
                 session.getBasicRemote().sendText(gson.toJson(new LeaveCommand(authToken, gameID, user, team)));
                 break;
@@ -63,7 +65,7 @@ public class Gameplay extends Endpoint {
             } else if (command.equals("resign") && team != null) {
                 handleResign();
             } else if (command.equals("highlight")) {
-                System.out.println("Unimplemented");
+                handleHighlight(input);
             } else {
                 System.out.println("Command not recognized.");
                 printHelp();
@@ -108,7 +110,7 @@ public class Gameplay extends Endpoint {
             session.getBasicRemote().sendText(gson.toJson(new MakeMoveCommand(authToken, gameID, user, move)));
         } catch (Exception e) {
             System.out.println("Invalid usage.");
-            System.out.println("Usage: move " + EscapeSequences.SET_TEXT_ITALIC + "<start position> <end position>"
+            System.out.println("Usage: move " + EscapeSequences.SET_TEXT_ITALIC + "<start>"
                     + EscapeSequences.RESET_TEXT_ITALIC);
         }
     }
@@ -125,7 +127,34 @@ public class Gameplay extends Endpoint {
         }
     }
 
-    private void printBoard() {
+    private void handleHighlight(Scanner input) {
+        try {
+            String start = input.next();
+            ChessPosition startPosition = parsePosition(start);
+            if (game.getBoard().getPiece(startPosition) == null) {
+                System.out.println("Error: No piece at indicated position");
+            } else {
+                printBoard(startPosition);
+            }
+        } catch (Exception e) {
+            System.out.println("Invalid usage");
+            System.out.println("Usage: highlight " + EscapeSequences.SET_TEXT_ITALIC + "<start>"
+                    + EscapeSequences.RESET_TEXT_ITALIC);
+        }
+    }
+
+    private void printBoard(ChessPosition highlightPiece) {
+        Collection<ChessMove> validMoves;
+        if (highlightPiece == null) {
+            validMoves = new ArrayList<>();
+        } else {
+            validMoves = game.validMoves(highlightPiece);
+            if (validMoves == null) {
+                validMoves = new ArrayList<>();
+            }
+        }
+        Collection<ChessPosition> endPositions = validMoves.stream()
+                .map(ChessMove::getEndPosition).toList();
         boolean flipped = team == ChessGame.TeamColor.BLACK;
         printEdge(flipped);
         int start = flipped ? 0 : 7;
@@ -136,10 +165,21 @@ public class Gameplay extends Endpoint {
             int startColumn = flipped ? 7 : 0;
             int endColumn = flipped ? -1 : 8;
             for (int j = startColumn; j != endColumn; j += flipped ? -1 : 1) {
-                if ((i + j) % 2 == 0) {
-                    setBackgroundBlack();
+                ChessPosition position = new ChessPosition(i + 1, j + 1);
+                if (position.equals(highlightPiece)) {
+                    System.out.print(EscapeSequences.SET_BG_COLOR_YELLOW);
+                } else if ((i + j) % 2 == 0) {
+                    if (endPositions.contains(position)) {
+                        System.out.print(EscapeSequences.SET_BG_COLOR_DARK_GREEN);
+                    } else {
+                        System.out.print(EscapeSequences.SET_BG_COLOR_BLACK);
+                    }
                 } else {
-                    setBackgroundWhite();
+                    if (endPositions.contains(position)) {
+                        System.out.print(EscapeSequences.SET_BG_COLOR_GREEN);
+                    } else {
+                        System.out.print(EscapeSequences.SET_BG_COLOR_WHITE);
+                    }
                 }
                 ChessPiece piece = game.getBoard().getPiece(new ChessPosition(i + 1, j + 1));
                 printPiece(piece);
@@ -213,7 +253,7 @@ public class Gameplay extends Endpoint {
         } else if (m.getServerMessageType() == ServerMessage.ServerMessageType.LOAD_GAME) {
             game = gson.fromJson(message, LoadGameMessage.class).getGame();
             System.out.print("\r" + EscapeSequences.ERASE_LINE);
-            printBoard();
+            printBoard(null);
             System.out.print(">>> ");
         } else if (m.getServerMessageType() == ServerMessage.ServerMessageType.ERROR) {
             String error = gson.fromJson(message, ErrorMessage.class).getErrorMessage();
