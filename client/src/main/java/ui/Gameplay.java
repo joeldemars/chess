@@ -1,11 +1,13 @@
 package ui;
 
 import chess.ChessGame;
+import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
 import com.google.gson.Gson;
 import websocket.commands.ConnectCommand;
 import websocket.commands.LeaveCommand;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
@@ -13,6 +15,7 @@ import websocket.messages.ServerMessage;
 
 import javax.websocket.*;
 import java.net.URI;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class Gameplay extends Endpoint {
@@ -58,7 +61,7 @@ public class Gameplay extends Endpoint {
                 session.getBasicRemote().sendText(gson.toJson(new LeaveCommand(authToken, gameID, user, team)));
                 break;
             } else if (command.equals("move")) {
-                System.out.println("Unimplemented");
+                handleMove(input);
             } else if (command.equals("resign")) {
                 System.out.println("Unimplemented");
             } else if (command.equals("highlight")) {
@@ -82,6 +85,32 @@ public class Gameplay extends Endpoint {
                 + "highlight " + EscapeSequences.SET_TEXT_ITALIC + "<start>"
                 + EscapeSequences.RESET_TEXT_ITALIC + ": Highlight all legal moves "
                 + "starting at the selected square\n");
+    }
+
+    private void handleMove(Scanner input) {
+        try {
+            String start = input.next();
+            String end = input.next();
+
+            ChessPosition startPosition = parsePosition(start);
+            ChessPosition endPosition = parsePosition(end);
+            ChessPiece.PieceType promotionPiece = null;
+
+            boolean promotionMove = game.getBoard().getPiece(startPosition) != null
+                    && game.getBoard().getPiece(startPosition).getPieceType() == ChessPiece.PieceType.PAWN
+                    && (endPosition.getRow() == 1 || endPosition.getRow() == 8);
+            if (promotionMove) {
+                promotionPiece = getPromotionPiece();
+            }
+
+            ChessMove move = new ChessMove(startPosition, endPosition, promotionPiece);
+
+            session.getBasicRemote().sendText(gson.toJson(new MakeMoveCommand(authToken, gameID, move)));
+        } catch (Exception e) {
+            System.out.println("Invalid usage.");
+            System.out.println("Usage: move " + EscapeSequences.SET_TEXT_ITALIC + "<start position> <end position>"
+                    + EscapeSequences.RESET_TEXT_ITALIC);
+        }
     }
 
     private void printBoard() {
@@ -176,6 +205,40 @@ public class Gameplay extends Endpoint {
             System.out.print(">>> ");
         } else {
             System.out.println("Received message: " + message);
+        }
+    }
+
+    private ChessPosition parsePosition(String string) throws RuntimeException {
+        try {
+            ChessPosition position = new ChessPosition(
+                    string.charAt(1) - '0',
+                    string.toLowerCase().charAt(0) - 'a' + 1
+            );
+            if (!position.isValid()) {
+                throw new RuntimeException("Invalid position");
+            }
+            return position;
+        } catch (IndexOutOfBoundsException e) {
+            throw new RuntimeException("Invalid syntax");
+        }
+    }
+
+    private ChessPiece.PieceType getPromotionPiece() throws RuntimeException {
+        System.out.print("Enter promotion piece [Q/N/R/B]: ");
+        Scanner input = new Scanner(System.in);
+
+        char piece = input.next().toLowerCase().charAt(0);
+
+        if (piece == 'q') {
+            return ChessPiece.PieceType.QUEEN;
+        } else if (piece == 'n') {
+            return ChessPiece.PieceType.KNIGHT;
+        } else if (piece == 'r') {
+            return ChessPiece.PieceType.ROOK;
+        } else if (piece == 'b') {
+            return ChessPiece.PieceType.BISHOP;
+        } else {
+            throw new RuntimeException("Invalid piece");
         }
     }
 }
