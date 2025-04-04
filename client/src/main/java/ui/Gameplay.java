@@ -5,10 +5,7 @@ import chess.ChessMove;
 import chess.ChessPiece;
 import chess.ChessPosition;
 import com.google.gson.Gson;
-import websocket.commands.ConnectCommand;
-import websocket.commands.LeaveCommand;
-import websocket.commands.MakeMoveCommand;
-import websocket.commands.UserGameCommand;
+import websocket.commands.*;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
@@ -64,7 +61,7 @@ public class Gameplay extends Endpoint {
             } else if (command.equals("move")) {
                 handleMove(input);
             } else if (command.equals("resign")) {
-                System.out.println("Unimplemented");
+                handleResign();
             } else if (command.equals("highlight")) {
                 System.out.println("Unimplemented");
             } else {
@@ -111,6 +108,18 @@ public class Gameplay extends Endpoint {
             System.out.println("Invalid usage.");
             System.out.println("Usage: move " + EscapeSequences.SET_TEXT_ITALIC + "<start position> <end position>"
                     + EscapeSequences.RESET_TEXT_ITALIC);
+        }
+    }
+
+    private void handleResign() {
+        System.out.print("Are you sure you want to resign? [y/N]: ");
+
+        try {
+            String input = new Scanner(System.in).next();
+            if (input.toLowerCase().charAt(0) == 'y') {
+                session.getBasicRemote().sendText(gson.toJson(new ResignCommand(authToken, gameID, user)));
+            }
+        } catch (Exception e) {
         }
     }
 

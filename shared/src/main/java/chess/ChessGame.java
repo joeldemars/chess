@@ -14,18 +14,21 @@ public class ChessGame {
     private TeamColor teamTurn;
     private ChessBoard board;
     private ArrayList<ChessMove> history;
+    private boolean isOver;
 
     public ChessGame() {
         teamTurn = TeamColor.WHITE;
         board = new ChessBoard();
         board.resetBoard();
         history = new ArrayList<>();
+        isOver = false;
     }
 
     public ChessGame(ChessGame other) {
         teamTurn = other.teamTurn;
         board = new ChessBoard(other.board);
         history = new ArrayList<>(other.history);
+        isOver = other.isOver;
     }
 
     /**
@@ -178,5 +181,13 @@ public class ChessGame {
 
     public ArrayList<ChessMove> getHistory() {
         return history;
+    }
+
+    public boolean getIsOver() {
+        return isOver;
+    }
+
+    public void setIsOver(boolean isOver) {
+        this.isOver = isOver;
     }
 }

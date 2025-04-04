@@ -12,10 +12,7 @@ import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import websocket.commands.ConnectCommand;
-import websocket.commands.LeaveCommand;
-import websocket.commands.MakeMoveCommand;
-import websocket.commands.UserGameCommand;
+import websocket.commands.*;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
@@ -46,6 +43,8 @@ public class WebSocketServer {
                 handleLeave(session, gson.fromJson(message, LeaveCommand.class));
             } else if (command.getCommandType() == UserGameCommand.CommandType.MAKE_MOVE) {
                 handleMakeMove(session, gson.fromJson(message, MakeMoveCommand.class));
+            } else if (command.getCommandType() == UserGameCommand.CommandType.RESIGN) {
+                handleResign(session, gson.fromJson(message, ResignCommand.class));
             }
         } catch (Exception e) {
             System.out.println("Error when handling message: " + e.getMessage());
@@ -109,7 +108,10 @@ public class WebSocketServer {
             ChessGame game = gameData.game();
             ChessPiece piece = game.getBoard().getPiece(command.move.getStartPosition());
             ChessGame.TeamColor turn = game.getTeamTurn();
-            if ((turn == ChessGame.TeamColor.WHITE && !command.user.equals(gameData.whiteUsername()))
+            if (game.getIsOver()) {
+                sendError(session, "Error: The game has ended");
+                return;
+            } else if ((turn == ChessGame.TeamColor.WHITE && !command.user.equals(gameData.whiteUsername()))
                     || (turn == ChessGame.TeamColor.BLACK && !command.user.equals(gameData.blackUsername()))) {
                 sendError(session, "Error: It is not your turn!");
                 return;
@@ -138,6 +140,29 @@ public class WebSocketServer {
             notifyStatus(gameData);
         } catch (DataAccessException e) {
             sendError(session, "Error: Game not found");
+        }
+    }
+
+    private void handleResign(Session session, ResignCommand command) {
+        try {
+            GameData gameData = games.getGame(command.getGameID());
+            ChessGame game = gameData.game();
+            if (game.getIsOver()) {
+                sendError(session, "Error: The game is already over");
+                return;
+            }
+            game.setIsOver(true);
+            games.updateGame(command.getGameID(), new GameData(
+                    gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game
+            ));
+            String notification = command.user + " has resigned.";
+            for (Session player : rooms.get(command.getGameID())) {
+                try {
+                    sendNotification(player, notification);
+                } catch (Exception e) {
+                }
+            }
+        } catch (Exception e) {
         }
     }
 
