@@ -9,6 +9,7 @@ import websocket.commands.ConnectCommand;
 import websocket.commands.LeaveCommand;
 import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
@@ -105,7 +106,7 @@ public class Gameplay extends Endpoint {
 
             ChessMove move = new ChessMove(startPosition, endPosition, promotionPiece);
 
-            session.getBasicRemote().sendText(gson.toJson(new MakeMoveCommand(authToken, gameID, move)));
+            session.getBasicRemote().sendText(gson.toJson(new MakeMoveCommand(authToken, gameID, user, move)));
         } catch (Exception e) {
             System.out.println("Invalid usage.");
             System.out.println("Usage: move " + EscapeSequences.SET_TEXT_ITALIC + "<start position> <end position>"
@@ -203,8 +204,10 @@ public class Gameplay extends Endpoint {
             System.out.print("\r" + EscapeSequences.ERASE_LINE);
             printBoard();
             System.out.print(">>> ");
-        } else {
-            System.out.println("Received message: " + message);
+        } else if (m.getServerMessageType() == ServerMessage.ServerMessageType.ERROR) {
+            String error = gson.fromJson(message, ErrorMessage.class).getErrorMessage();
+            System.out.println("\r" + EscapeSequences.ERASE_LINE + error);
+            System.out.print(">>> ");
         }
     }
 

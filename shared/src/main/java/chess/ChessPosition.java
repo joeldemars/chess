@@ -70,4 +70,8 @@ public class ChessPosition {
     public boolean isValid() {
         return 1 <= this.col && this.col <= 8 && 1 <= this.row && this.row <= 8;
     }
+
+    public String toAlgebraicNotation() {
+        return "" + (char) ('a' + col - 1) + (char) ('0' + row);
+    }
 }

@@ -1,6 +1,9 @@
 package server;
 
 import chess.ChessGame;
+import chess.ChessPiece;
+import chess.ChessPosition;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
@@ -11,6 +14,7 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import websocket.commands.ConnectCommand;
 import websocket.commands.LeaveCommand;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
@@ -40,6 +44,8 @@ public class WebSocketServer {
                 handleConnect(session, gson.fromJson(message, ConnectCommand.class));
             } else if (command.getCommandType() == UserGameCommand.CommandType.LEAVE) {
                 handleLeave(session, gson.fromJson(message, LeaveCommand.class));
+            } else if (command.getCommandType() == UserGameCommand.CommandType.MAKE_MOVE) {
+                handleMakeMove(session, gson.fromJson(message, MakeMoveCommand.class));
             }
         } catch (Exception e) {
             System.out.println("Error when handling message: " + e.getMessage());
@@ -92,6 +98,66 @@ public class WebSocketServer {
         for (Session player : room) {
             try {
                 sendNotification(player, notification);
+            } catch (IOException e) {
+            }
+        }
+    }
+
+    private void handleMakeMove(Session session, MakeMoveCommand command) throws Exception {
+        try {
+            GameData gameData = games.getGame(command.getGameID());
+            ChessGame game = gameData.game();
+            ChessPiece piece = game.getBoard().getPiece(command.move.getStartPosition());
+            ChessGame.TeamColor turn = game.getTeamTurn();
+            if ((turn == ChessGame.TeamColor.WHITE && !command.user.equals(gameData.whiteUsername()))
+                    || (turn == ChessGame.TeamColor.BLACK && !command.user.equals(gameData.blackUsername()))) {
+                sendError(session, "Error: It is not your turn!");
+                return;
+            }
+            try {
+                game.makeMove(command.move);
+            } catch (InvalidMoveException e) {
+                sendError(session, "Error: invalid move");
+                return;
+            }
+            games.updateGame(command.getGameID(), new GameData(
+                    command.getGameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game
+            ));
+            String notification = command.user + " moved " + piece.getPieceType().toString().toLowerCase()
+                    + " from " + command.move.getStartPosition().toAlgebraicNotation() + " to "
+                    + command.move.getEndPosition().toAlgebraicNotation();
+            for (Session player : rooms.get(command.getGameID())) {
+                try {
+                    sendLoadGame(player, game);
+                    if (player != session) {
+                        sendNotification(player, notification);
+                    }
+                } catch (IOException e) {
+                }
+            }
+            notifyStatus(gameData);
+        } catch (DataAccessException e) {
+            sendError(session, "Error: Game not found");
+        }
+    }
+
+    private void notifyStatus(GameData gameData) {
+        ChessGame game = gameData.game();
+        ChessGame.TeamColor turn = game.getTeamTurn();
+        String player = turn == ChessGame.TeamColor.WHITE ? gameData.whiteUsername() : gameData.blackUsername();
+        String notification;
+        if (game.isInCheckmate(turn)) {
+            notification = player + " is in checkmate!";
+        } else if (game.isInCheck(turn)) {
+            notification = player + " is in check!";
+        } else if (game.isInStalemate(turn)) {
+            notification = player + " is in stalemate!";
+        } else {
+            return;
+        }
+        for (Session session : rooms.get(gameData.gameID())) {
+            try {
+                sendNotification(session, notification);
             } catch (IOException e) {
             }
         }
