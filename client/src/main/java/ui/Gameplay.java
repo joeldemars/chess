@@ -47,7 +47,7 @@ public class Gameplay extends Endpoint {
     }
 
     public void start() throws Exception {
-        session.getBasicRemote().sendText(gson.toJson(new ConnectCommand(authToken, gameID, team)));
+        session.getBasicRemote().sendText(gson.toJson(new ConnectCommand(authToken, gameID)));
         printHelp();
         while (true) {
             System.out.print(">>> ");
@@ -58,7 +58,7 @@ public class Gameplay extends Endpoint {
             } else if (command.equals("board")) {
                 printBoard(null);
             } else if (command.equals("leave")) {
-                session.getBasicRemote().sendText(gson.toJson(new LeaveCommand(authToken, gameID, team)));
+                session.getBasicRemote().sendText(gson.toJson(new LeaveCommand(authToken, gameID)));
                 break;
             } else if (command.equals("move") && team != null) {
                 handleMove(input);

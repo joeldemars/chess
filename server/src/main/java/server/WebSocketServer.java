@@ -71,9 +71,9 @@ public class WebSocketServer {
         }
         HashSet<Session> room = rooms.get(command.getGameID());
         String role;
-        if (command.team == ChessGame.TeamColor.WHITE) {
+        if (user.equals(gameData.whiteUsername())) {
             role = "the white player.";
-        } else if (command.team == ChessGame.TeamColor.BLACK) {
+        } else if (user.equals(gameData.blackUsername())) {
             role = "the black player.";
         } else {
             role = "an observer.";
@@ -90,15 +90,15 @@ public class WebSocketServer {
         HashSet<Session> room = rooms.get(command.getGameID());
         room.remove(session);
         try {
+            String user = auths.getAuth(command.getAuthToken()).username();
             GameData game = games.getGame(command.getGameID());
-            if (command.team == ChessGame.TeamColor.WHITE) {
+            if (user.equals(game.whiteUsername())) {
                 games.updateGame(command.getGameID(),
                         new GameData(game.gameID(), null, game.blackUsername(), game.gameName(), game.game()));
-            } else if (command.team == ChessGame.TeamColor.BLACK) {
+            } else if (user.equals(game.blackUsername())) {
                 games.updateGame(command.getGameID(),
                         new GameData(game.gameID(), game.whiteUsername(), null, game.gameName(), game.game()));
             }
-            String user = auths.getAuth(command.getAuthToken()).username();
             String notification = user + " left the game.";
             for (Session player : room) {
                 sendNotification(player, notification);
@@ -151,6 +151,11 @@ public class WebSocketServer {
         try {
             GameData gameData = games.getGame(command.getGameID());
             ChessGame game = gameData.game();
+            String user = auths.getAuth(command.getAuthToken()).username();
+            if (!user.equals(gameData.whiteUsername()) && !user.equals(gameData.blackUsername())) {
+                sendError(session, "Error: Only the players can resign");
+                return;
+            }
             if (game.getIsOver()) {
                 sendError(session, "Error: The game is already over");
                 return;
@@ -159,7 +164,6 @@ public class WebSocketServer {
             games.updateGame(command.getGameID(), new GameData(
                     gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game
             ));
-            String user = auths.getAuth(command.getAuthToken()).username();
             String notification = user + " has resigned.";
             for (Session player : rooms.get(command.getGameID())) {
                 sendNotification(player, notification);
@@ -174,19 +178,28 @@ public class WebSocketServer {
         ChessGame.TeamColor turn = game.getTeamTurn();
         String player = turn == ChessGame.TeamColor.WHITE ? gameData.whiteUsername() : gameData.blackUsername();
         String notification;
-        if (game.isInCheckmate(turn)) {
-            notification = player + " is in checkmate!";
-            // Set game over
-        } else if (game.isInCheck(turn)) {
-            notification = player + " is in check!";
-        } else if (game.isInStalemate(turn)) {
-            notification = player + " is in stalemate!";
-            // set game over
-        } else {
-            return;
-        }
-        for (Session session : rooms.get(gameData.gameID())) {
-            sendNotification(session, notification);
+        game.setIsOver(true);
+        GameData gameOver = new GameData(
+                gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game
+        );
+        try {
+            if (game.isInCheckmate(turn)) {
+                notification = player + " is in checkmate!";
+                games.updateGame(gameData.gameID(), gameOver);
+            } else if (game.isInCheck(turn)) {
+                notification = player + " is in check!";
+            } else if (game.isInStalemate(turn)) {
+                notification = player + " is in stalemate!";
+                games.updateGame(gameData.gameID(), gameOver);
+            } else {
+                return;
+            }
+
+            for (Session session : rooms.get(gameData.gameID())) {
+                sendNotification(session, notification);
+            }
+        } catch (DataAccessException e) {
+            System.out.println("Error: Unable to update game");
         }
     }
 
