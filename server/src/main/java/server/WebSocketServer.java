@@ -16,6 +16,7 @@ import websocket.commands.*;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
+import websocket.messages.ServerMessage;
 
 import javax.xml.crypto.Data;
 import java.io.IOException;
@@ -217,7 +218,7 @@ public class WebSocketServer {
         try {
             session.getRemote().sendString(gson.toJson(new NotificationMessage(notification)));
         } catch (IOException e) {
-            System.out.println("Failed to send websocket message: " + e.getMessage());
+            System.out.println("Failed to send websocket notification: " + e.getMessage());
         }
 
     }
@@ -226,7 +227,7 @@ public class WebSocketServer {
         try {
             session.getRemote().sendString(gson.toJson(new ErrorMessage(errorMessage)));
         } catch (IOException e) {
-            System.out.println("Failed to send websocket message: " + e.getMessage());
+            System.out.println("Failed to send websocket error: " + e.getMessage());
         }
     }
 

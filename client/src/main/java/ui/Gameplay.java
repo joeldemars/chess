@@ -203,14 +203,6 @@ public class Gameplay extends Endpoint {
                 + EscapeSequences.RESET_TEXT_COLOR);
     }
 
-    private void setBackgroundBlack() {
-        System.out.print(EscapeSequences.SET_BG_COLOR_BLACK);
-    }
-
-    private void setBackgroundWhite() {
-        System.out.print(EscapeSequences.SET_BG_COLOR_WHITE);
-    }
-
     private void printPiece(ChessPiece piece) {
         if (piece == null) {
             System.out.print("   ");
@@ -246,7 +238,8 @@ public class Gameplay extends Endpoint {
 
     private void handleMessage(String message) {
         ServerMessage m = gson.fromJson(message, ServerMessage.class);
-        if (m.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION) {
+        if (m.getServerMessageType() == ServerMessage.ServerMessageType.NOTIFICATION
+                || m.getServerMessageType() == ServerMessage.ServerMessageType.ERROR) {
             String notification = gson.fromJson(message, NotificationMessage.class).getMessage();
             System.out.println("\r" + EscapeSequences.ERASE_LINE + notification);
             System.out.print(">>> ");

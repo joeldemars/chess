@@ -27,10 +27,6 @@ public class ServerMessage {
         this.data = data;
     }
 
-    public static ServerMessage notification(String data) {
-        return new ServerMessage(ServerMessageType.NOTIFICATION, data);
-    }
-
     public ServerMessageType getServerMessageType() {
         return this.serverMessageType;
     }
