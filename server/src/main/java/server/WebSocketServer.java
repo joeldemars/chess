@@ -17,6 +17,7 @@ import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 
+import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,26 +37,30 @@ public class WebSocketServer {
     @OnWebSocketMessage
     public void onMessage(Session session, String message) {
         UserGameCommand command = gson.fromJson(message, UserGameCommand.class);
-        try {
-            if (command.getCommandType() == UserGameCommand.CommandType.CONNECT) {
-                handleConnect(session, gson.fromJson(message, ConnectCommand.class));
-            } else if (command.getCommandType() == UserGameCommand.CommandType.LEAVE) {
-                handleLeave(session, gson.fromJson(message, LeaveCommand.class));
-            } else if (command.getCommandType() == UserGameCommand.CommandType.MAKE_MOVE) {
-                handleMakeMove(session, gson.fromJson(message, MakeMoveCommand.class));
-            } else if (command.getCommandType() == UserGameCommand.CommandType.RESIGN) {
-                handleResign(session, gson.fromJson(message, ResignCommand.class));
-            }
-        } catch (Exception e) {
-            System.out.println("Error when handling message: " + e.getMessage());
+        if (!authenticate(session, command.getAuthToken())) {
+            return;
+        }
+        if (command.getCommandType() == UserGameCommand.CommandType.CONNECT) {
+            handleConnect(session, gson.fromJson(message, ConnectCommand.class));
+        } else if (command.getCommandType() == UserGameCommand.CommandType.LEAVE) {
+            handleLeave(session, gson.fromJson(message, LeaveCommand.class));
+        } else if (command.getCommandType() == UserGameCommand.CommandType.MAKE_MOVE) {
+            handleMakeMove(session, gson.fromJson(message, MakeMoveCommand.class));
+        } else if (command.getCommandType() == UserGameCommand.CommandType.RESIGN) {
+            handleResign(session, gson.fromJson(message, ResignCommand.class));
         }
     }
 
-    private void handleConnect(Session session, ConnectCommand command) throws Exception {
+    private void handleConnect(Session session, ConnectCommand command) {
+        if (!authenticate(session, command.getAuthToken())) {
+            return;
+        }
+
+        GameData gameData;
         try {
-            auths.getAuth(command.getAuthToken());
+            gameData = games.getGame(command.getGameID());
         } catch (DataAccessException e) {
-            sendError(session, "Error: invalid credentials");
+            sendError(session, "Error: game not found");
             return;
         }
 
@@ -73,36 +78,34 @@ public class WebSocketServer {
         }
         String notification = command.user + " joined the game as " + role;
         for (Session player : room) {
-            try {
-                sendNotification(player, notification);
-            } catch (IOException e) {
-            }
+            sendNotification(player, notification);
         }
         room.add(session);
-        sendLoadGame(session, games.getGame(command.getGameID()).game());
+        sendLoadGame(session, gameData.game());
     }
 
-    private void handleLeave(Session session, LeaveCommand command) throws Exception {
+    private void handleLeave(Session session, LeaveCommand command) {
         HashSet<Session> room = rooms.get(command.getGameID());
         room.remove(session);
-        GameData game = games.getGame(command.getGameID());
-        if (command.team == ChessGame.TeamColor.WHITE) {
-            games.updateGame(command.getGameID(),
-                    new GameData(game.gameID(), null, game.blackUsername(), game.gameName(), game.game()));
-        } else if (command.team == ChessGame.TeamColor.BLACK) {
-            games.updateGame(command.getGameID(),
-                    new GameData(game.gameID(), game.whiteUsername(), null, game.gameName(), game.game()));
+        try {
+            GameData game = games.getGame(command.getGameID());
+            if (command.team == ChessGame.TeamColor.WHITE) {
+                games.updateGame(command.getGameID(),
+                        new GameData(game.gameID(), null, game.blackUsername(), game.gameName(), game.game()));
+            } else if (command.team == ChessGame.TeamColor.BLACK) {
+                games.updateGame(command.getGameID(),
+                        new GameData(game.gameID(), game.whiteUsername(), null, game.gameName(), game.game()));
+            }
+        } catch (DataAccessException e) {
+            sendError(session, "Error: unable to find game");
         }
         String notification = command.user + " left the game.";
         for (Session player : room) {
-            try {
-                sendNotification(player, notification);
-            } catch (IOException e) {
-            }
+            sendNotification(player, notification);
         }
     }
 
-    private void handleMakeMove(Session session, MakeMoveCommand command) throws Exception {
+    private void handleMakeMove(Session session, MakeMoveCommand command) {
         try {
             GameData gameData = games.getGame(command.getGameID());
             ChessGame game = gameData.game();
@@ -129,12 +132,9 @@ public class WebSocketServer {
                     + " from " + command.move.getStartPosition().toAlgebraicNotation() + " to "
                     + command.move.getEndPosition().toAlgebraicNotation();
             for (Session player : rooms.get(command.getGameID())) {
-                try {
-                    sendLoadGame(player, game);
-                    if (player != session) {
-                        sendNotification(player, notification);
-                    }
-                } catch (IOException e) {
+                sendLoadGame(player, game);
+                if (player != session) {
+                    sendNotification(player, notification);
                 }
             }
             notifyStatus(gameData);
@@ -157,12 +157,10 @@ public class WebSocketServer {
             ));
             String notification = command.user + " has resigned.";
             for (Session player : rooms.get(command.getGameID())) {
-                try {
-                    sendNotification(player, notification);
-                } catch (Exception e) {
-                }
+                sendNotification(player, notification);
             }
-        } catch (Exception e) {
+        } catch (DataAccessException e) {
+            sendError(session, "Error: Unable to access game");
         }
     }
 
@@ -173,30 +171,52 @@ public class WebSocketServer {
         String notification;
         if (game.isInCheckmate(turn)) {
             notification = player + " is in checkmate!";
+            // Set game over
         } else if (game.isInCheck(turn)) {
             notification = player + " is in check!";
         } else if (game.isInStalemate(turn)) {
             notification = player + " is in stalemate!";
+            // set game over
         } else {
             return;
         }
         for (Session session : rooms.get(gameData.gameID())) {
-            try {
-                sendNotification(session, notification);
-            } catch (IOException e) {
-            }
+            sendNotification(session, notification);
         }
     }
 
-    private void sendNotification(Session session, String notification) throws IOException {
-        session.getRemote().sendString(gson.toJson(new NotificationMessage(notification)));
+    private boolean authenticate(Session session, String authToken) {
+        try {
+            auths.getAuth(authToken);
+            return true;
+        } catch (DataAccessException e) {
+            sendError(session, "Error: invalid credentials");
+            return false;
+        }
     }
 
-    private void sendError(Session session, String errorMessage) throws IOException {
-        session.getRemote().sendString(gson.toJson(new ErrorMessage(errorMessage)));
+    private void sendNotification(Session session, String notification) {
+        try {
+            session.getRemote().sendString(gson.toJson(new NotificationMessage(notification)));
+        } catch (IOException e) {
+            System.out.println("Failed to send websocket message: " + e.getMessage());
+        }
+
     }
 
-    private void sendLoadGame(Session session, ChessGame game) throws IOException {
-        session.getRemote().sendString(gson.toJson(new LoadGameMessage(game)));
+    private void sendError(Session session, String errorMessage) {
+        try {
+            session.getRemote().sendString(gson.toJson(new ErrorMessage(errorMessage)));
+        } catch (IOException e) {
+            System.out.println("Failed to send websocket message: " + e.getMessage());
+        }
+    }
+
+    private void sendLoadGame(Session session, ChessGame game) {
+        try {
+            session.getRemote().sendString(gson.toJson(new LoadGameMessage(game)));
+        } catch (IOException e) {
+            System.out.println("Failed to send websocket message: " + e.getMessage());
+        }
     }
 }
