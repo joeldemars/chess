@@ -47,7 +47,7 @@ public class Gameplay extends Endpoint {
     }
 
     public void start() throws Exception {
-        session.getBasicRemote().sendText(gson.toJson(new ConnectCommand(authToken, gameID, user, team)));
+        session.getBasicRemote().sendText(gson.toJson(new ConnectCommand(authToken, gameID, team)));
         printHelp();
         while (true) {
             System.out.print(">>> ");
@@ -58,7 +58,7 @@ public class Gameplay extends Endpoint {
             } else if (command.equals("board")) {
                 printBoard(null);
             } else if (command.equals("leave")) {
-                session.getBasicRemote().sendText(gson.toJson(new LeaveCommand(authToken, gameID, user, team)));
+                session.getBasicRemote().sendText(gson.toJson(new LeaveCommand(authToken, gameID, team)));
                 break;
             } else if (command.equals("move") && team != null) {
                 handleMove(input);
@@ -107,7 +107,7 @@ public class Gameplay extends Endpoint {
 
             ChessMove move = new ChessMove(startPosition, endPosition, promotionPiece);
 
-            session.getBasicRemote().sendText(gson.toJson(new MakeMoveCommand(authToken, gameID, user, move)));
+            session.getBasicRemote().sendText(gson.toJson(new MakeMoveCommand(authToken, gameID, move)));
         } catch (Exception e) {
             System.out.println("Invalid usage.");
             System.out.println("Usage: move " + EscapeSequences.SET_TEXT_ITALIC + "<start>"
@@ -121,7 +121,7 @@ public class Gameplay extends Endpoint {
         try {
             String input = new Scanner(System.in).next();
             if (input.toLowerCase().charAt(0) == 'y') {
-                session.getBasicRemote().sendText(gson.toJson(new ResignCommand(authToken, gameID, user)));
+                session.getBasicRemote().sendText(gson.toJson(new ResignCommand(authToken, gameID)));
             }
         } catch (Exception e) {
         }

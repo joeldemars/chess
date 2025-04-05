@@ -57,8 +57,10 @@ public class WebSocketServer {
         }
 
         GameData gameData;
+        String user;
         try {
             gameData = games.getGame(command.getGameID());
+            user = auths.getAuth(command.getAuthToken()).username();
         } catch (DataAccessException e) {
             sendError(session, "Error: game not found");
             return;
@@ -76,7 +78,7 @@ public class WebSocketServer {
         } else {
             role = "an observer.";
         }
-        String notification = command.user + " joined the game as " + role;
+        String notification = user + " joined the game as " + role;
         for (Session player : room) {
             sendNotification(player, notification);
         }
@@ -96,12 +98,13 @@ public class WebSocketServer {
                 games.updateGame(command.getGameID(),
                         new GameData(game.gameID(), game.whiteUsername(), null, game.gameName(), game.game()));
             }
+            String user = auths.getAuth(command.getAuthToken()).username();
+            String notification = user + " left the game.";
+            for (Session player : room) {
+                sendNotification(player, notification);
+            }
         } catch (DataAccessException e) {
             sendError(session, "Error: unable to find game");
-        }
-        String notification = command.user + " left the game.";
-        for (Session player : room) {
-            sendNotification(player, notification);
         }
     }
 
@@ -111,11 +114,12 @@ public class WebSocketServer {
             ChessGame game = gameData.game();
             ChessPiece piece = game.getBoard().getPiece(command.move.getStartPosition());
             ChessGame.TeamColor turn = game.getTeamTurn();
+            String user = auths.getAuth(command.getAuthToken()).username();
             if (game.getIsOver()) {
                 sendError(session, "Error: The game has ended");
                 return;
-            } else if ((turn == ChessGame.TeamColor.WHITE && !command.user.equals(gameData.whiteUsername()))
-                    || (turn == ChessGame.TeamColor.BLACK && !command.user.equals(gameData.blackUsername()))) {
+            } else if ((turn == ChessGame.TeamColor.WHITE && !user.equals(gameData.whiteUsername()))
+                    || (turn == ChessGame.TeamColor.BLACK && !user.equals(gameData.blackUsername()))) {
                 sendError(session, "Error: It is not your turn!");
                 return;
             }
@@ -128,7 +132,7 @@ public class WebSocketServer {
             games.updateGame(command.getGameID(), new GameData(
                     command.getGameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game
             ));
-            String notification = command.user + " moved " + piece.getPieceType().toString().toLowerCase()
+            String notification = user + " moved " + piece.getPieceType().toString().toLowerCase()
                     + " from " + command.move.getStartPosition().toAlgebraicNotation() + " to "
                     + command.move.getEndPosition().toAlgebraicNotation();
             for (Session player : rooms.get(command.getGameID())) {
@@ -155,7 +159,8 @@ public class WebSocketServer {
             games.updateGame(command.getGameID(), new GameData(
                     gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game
             ));
-            String notification = command.user + " has resigned.";
+            String user = auths.getAuth(command.getAuthToken()).username();
+            String notification = user + " has resigned.";
             for (Session player : rooms.get(command.getGameID())) {
                 sendNotification(player, notification);
             }
